@@ -61,6 +61,18 @@ body {
   background: color-mix(in srgb, var(--foreground) 20%, transparent);
 }
 
+/* Desactivar flechitas (spinners) en inputs numéricos para permitir escritura limpia por teclado */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+
 /* Animations */
 @keyframes slideIn {
   from {

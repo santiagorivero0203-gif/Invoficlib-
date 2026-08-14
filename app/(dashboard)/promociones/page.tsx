@@ -67,7 +67,7 @@ export default function PromocionesPage() {
 
   // Modal de devolución individual
   const [detalleDevolucion, setDetalleDevolucion] = useState<DetalleNota | null>(null)
-  const [cantidadDevolver, setCantidadDevolver] = useState(1)
+  const [cantidadDevolver, setCantidadDevolver] = useState('1')
   const [motivoDevolucion, setMotivoDevolucion] = useState('No seleccionado en lista escolar')
   const [procesandoDevolucion, setProcesandoDevolucion] = useState(false)
   const [errorDevolucion, setErrorDevolucion] = useState<string | null>(null)
@@ -120,13 +120,21 @@ export default function PromocionesPage() {
   // Devolución individual
   const abrirModalDevolucion = (detalle: DetalleNota) => {
     setDetalleDevolucion(detalle)
-    setCantidadDevolver(1)
+    setCantidadDevolver('1')
     setMotivoDevolucion('Muestra devuelta por el colegio')
     setErrorDevolucion(null)
   }
 
   const handleConfirmarDevolucion = async () => {
     if (!detalleDevolucion || !notaCompleta) return
+
+    const cantNum = parseInt(cantidadDevolver, 10)
+    const maxDevolver = detalleDevolucion.cantidad - getDevueltosDeDetalle(detalleDevolucion.id)
+
+    if (isNaN(cantNum) || cantNum <= 0 || cantNum > maxDevolver) {
+      setErrorDevolucion(`Ingresa una cantidad válida entre 1 y ${maxDevolver}.`)
+      return
+    }
 
     setProcesandoDevolucion(true)
     setErrorDevolucion(null)
@@ -135,8 +143,8 @@ export default function PromocionesPage() {
       nota_id: notaCompleta.id,
       producto_id: detalleDevolucion.producto_id,
       detalle_nota_id: detalleDevolucion.id,
-      cantidad_devuelta: cantidadDevolver,
-      monto_descontado: cantidadDevolver * detalleDevolucion.precio_unitario_usd,
+      cantidad_devuelta: cantNum,
+      monto_descontado: cantNum * detalleDevolucion.precio_unitario_usd,
       motivo: motivoDevolucion,
       usuario_id: user?.id ?? null,
       fecha: new Date().toISOString(),
@@ -599,11 +607,10 @@ export default function PromocionesPage() {
                 Cantidad a devolver al inventario
               </label>
               <input
-                type="number"
-                min={1}
-                max={detalleDevolucion.cantidad - getDevueltosDeDetalle(detalleDevolucion.id)}
+                type="text"
+                inputMode="numeric"
                 value={cantidadDevolver}
-                onChange={(e) => setCantidadDevolver(Number(e.target.value))}
+                onChange={(e) => setCantidadDevolver(e.target.value)}
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
               />
             </div>

@@ -7,7 +7,7 @@
  * 
  * Permite:
  * - Ver el stock en tiempo real de cada libro/producto.
- * - Registrar nuevos libros en el catálogo.
+ * - Registrar nuevos libros en el catálogo (con entrada directa por teclado).
  * - Cargar entradas de stock (compras de editorial, imprenta, etc.).
  * - Ajustar stock o editar precios y datos.
  * - Enlace directo al Historial de Movimientos (Ledger).
@@ -20,7 +20,6 @@ import {
   Boxes,
   Plus,
   Search,
-  ArrowUpDown,
   AlertTriangle,
   Pencil,
   BookOpen,
@@ -50,16 +49,16 @@ export default function InventarioPage() {
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
 
-  // Modal Nuevo/Editar Producto
+  // Modal Nuevo/Editar Producto (Valores en string para entrada libre por teclado)
   const [modalProductoAbierto, setModalProductoAbierto] = useState(false)
   const [editandoId, setEditandoId] = useState<string | null>(null)
   const [formProducto, setFormProducto] = useState({
     codigo_sku: '',
     nombre: '',
     descripcion: '',
-    precio_usd: 0,
-    stock_minimo: 5,
-    stock_inicial: 0,
+    precio_usd: '',
+    stock_minimo: '5',
+    stock_inicial: '',
   })
   const [guardandoProducto, setGuardandoProducto] = useState(false)
   const [errorModalProducto, setErrorModalProducto] = useState<string | null>(null)
@@ -68,7 +67,7 @@ export default function InventarioPage() {
   const [modalStockAbierto, setModalStockAbierto] = useState(false)
   const [productoSeleccionado, setProductoSeleccionado] = useState<ProductoConStock | null>(null)
   const [tipoMovimiento, setTipoMovimiento] = useState<'entrada' | 'salida'>('entrada')
-  const [cantidadAjuste, setCantidadAjuste] = useState(10)
+  const [cantidadAjuste, setCantidadAjuste] = useState('10')
   const [motivoAjuste, setMotivoAjuste] = useState('Ingreso de imprenta / abastecimiento')
   const [guardandoStock, setGuardandoStock] = useState(false)
   const [errorModalStock, setErrorModalStock] = useState<string | null>(null)
@@ -99,9 +98,9 @@ export default function InventarioPage() {
       codigo_sku: `LIB-${Math.floor(100 + Math.random() * 900)}`,
       nombre: '',
       descripcion: '',
-      precio_usd: 0,
-      stock_minimo: 5,
-      stock_inicial: 0,
+      precio_usd: '',
+      stock_minimo: '5',
+      stock_inicial: '',
     })
     setErrorModalProducto(null)
     setModalProductoAbierto(true)
@@ -113,9 +112,9 @@ export default function InventarioPage() {
       codigo_sku: p.codigo_sku,
       nombre: p.nombre,
       descripcion: p.descripcion ?? '',
-      precio_usd: p.precio_usd,
-      stock_minimo: p.stock_minimo,
-      stock_inicial: 0,
+      precio_usd: String(p.precio_usd),
+      stock_minimo: String(p.stock_minimo),
+      stock_inicial: '',
     })
     setErrorModalProducto(null)
     setModalProductoAbierto(true)
@@ -127,6 +126,18 @@ export default function InventarioPage() {
       return
     }
 
+    const precioNum = parseFloat(formProducto.precio_usd.replace(',', '.'))
+    if (isNaN(precioNum) || precioNum < 0) {
+      setErrorModalProducto('Ingresa un precio válido (ej: 12.50 o 15).')
+      return
+    }
+
+    const stockMinNum = parseInt(formProducto.stock_minimo, 10)
+    const stockMinFinal = isNaN(stockMinNum) || stockMinNum < 0 ? 5 : stockMinNum
+
+    const stockIniNum = parseInt(formProducto.stock_inicial, 10)
+    const stockIniFinal = isNaN(stockIniNum) || stockIniNum < 0 ? 0 : stockIniNum
+
     setGuardandoProducto(true)
     setErrorModalProducto(null)
 
@@ -135,8 +146,8 @@ export default function InventarioPage() {
         codigo_sku: formProducto.codigo_sku.trim(),
         nombre: formProducto.nombre.trim(),
         descripcion: formProducto.descripcion.trim() || null,
-        precio_usd: Number(formProducto.precio_usd),
-        stock_minimo: Number(formProducto.stock_minimo),
+        precio_usd: precioNum,
+        stock_minimo: stockMinFinal,
       })
       setGuardandoProducto(false)
       if (error) {
@@ -148,8 +159,8 @@ export default function InventarioPage() {
         codigo_sku: formProducto.codigo_sku.trim(),
         nombre: formProducto.nombre.trim(),
         descripcion: formProducto.descripcion.trim() || null,
-        precio_usd: Number(formProducto.precio_usd),
-        stock_minimo: Number(formProducto.stock_minimo),
+        precio_usd: precioNum,
+        stock_minimo: stockMinFinal,
         estado: true,
       })
 
@@ -160,11 +171,11 @@ export default function InventarioPage() {
       }
 
       // Si especificó stock inicial, registrar la entrada en el Ledger
-      if (formProducto.stock_inicial > 0) {
+      if (stockIniFinal > 0) {
         await registrarMovimientoManual({
           producto_id: nuevo.id,
           tipo: 'entrada',
-          cantidad: Number(formProducto.stock_inicial),
+          cantidad: stockIniFinal,
           motivo: 'Carga inicial de inventario',
           usuario_id: user?.id ?? null,
           nota_id: null,
@@ -181,15 +192,17 @@ export default function InventarioPage() {
   const abrirCargarStock = (p?: ProductoConStock) => {
     setProductoSeleccionado(p ?? (productos[0] || null))
     setTipoMovimiento('entrada')
-    setCantidadAjuste(10)
+    setCantidadAjuste('10')
     setMotivoAjuste('Entrada de almacén / Imprenta')
     setErrorModalStock(null)
     setModalStockAbierto(true)
   }
 
   const handleGuardarMovimientoStock = async () => {
-    if (!productoSeleccionado || cantidadAjuste <= 0) {
-      setErrorModalStock('Debes seleccionar un producto y una cantidad válida mayor a 0.')
+    const cantNum = parseInt(cantidadAjuste, 10)
+
+    if (!productoSeleccionado || isNaN(cantNum) || cantNum <= 0) {
+      setErrorModalStock('Ingresa una cantidad válida mayor a 0.')
       return
     }
 
@@ -199,7 +212,7 @@ export default function InventarioPage() {
     const { error } = await registrarMovimientoManual({
       producto_id: productoSeleccionado.id,
       tipo: tipoMovimiento,
-      cantidad: cantidadAjuste,
+      cantidad: cantNum,
       motivo: motivoAjuste.trim() || 'Ajuste manual de stock',
       usuario_id: user?.id ?? null,
       nota_id: null,
@@ -459,11 +472,11 @@ export default function InventarioPage() {
                 Precio USD ($) <span className="text-rose-500">*</span>
               </label>
               <input
-                type="number"
-                step="0.01"
-                min="0"
+                type="text"
+                inputMode="decimal"
                 value={formProducto.precio_usd}
-                onChange={(e) => setFormProducto({ ...formProducto, precio_usd: Number(e.target.value) })}
+                onChange={(e) => setFormProducto({ ...formProducto, precio_usd: e.target.value })}
+                placeholder="0.00"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono focus:border-primary-accent/50 focus:outline-none"
               />
             </div>
@@ -501,10 +514,11 @@ export default function InventarioPage() {
                 Stock Mínimo (Alerta)
               </label>
               <input
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
                 value={formProducto.stock_minimo}
-                onChange={(e) => setFormProducto({ ...formProducto, stock_minimo: Number(e.target.value) })}
+                onChange={(e) => setFormProducto({ ...formProducto, stock_minimo: e.target.value })}
+                placeholder="5"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono focus:border-primary-accent/50 focus:outline-none"
               />
             </div>
@@ -515,10 +529,11 @@ export default function InventarioPage() {
                   Stock Inicial (Entrada)
                 </label>
                 <input
-                  type="number"
-                  min="0"
+                  type="text"
+                  inputMode="numeric"
                   value={formProducto.stock_inicial}
-                  onChange={(e) => setFormProducto({ ...formProducto, stock_inicial: Number(e.target.value) })}
+                  onChange={(e) => setFormProducto({ ...formProducto, stock_inicial: e.target.value })}
+                  placeholder="0"
                   className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono focus:border-primary-accent/50 focus:outline-none"
                 />
               </div>
@@ -589,10 +604,11 @@ export default function InventarioPage() {
                 Cantidad
               </label>
               <input
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
                 value={cantidadAjuste}
-                onChange={(e) => setCantidadAjuste(Number(e.target.value))}
+                onChange={(e) => setCantidadAjuste(e.target.value)}
+                placeholder="10"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono focus:border-primary-accent/50 focus:outline-none"
               />
             </div>

@@ -56,7 +56,7 @@ export default function PedidosPage() {
   const [errorDetalle, setErrorDetalle] = useState<string | null>(null)
 
   const [detalleDevolucion, setDetalleDevolucion] = useState<DetalleNota | null>(null)
-  const [cantidadDevolver, setCantidadDevolver] = useState(1)
+  const [cantidadDevolver, setCantidadDevolver] = useState('1')
   const [motivo, setMotivo] = useState('Devolución de producto')
   const [devolviendo, setDevolviendo] = useState(false)
   const [devolucionOk, setDevolucionOk] = useState(false)
@@ -108,7 +108,12 @@ export default function PedidosPage() {
     : 0
 
   const confirmarDevolucion = async () => {
-    if (!detalleDevolucion || !notaCompleta || cantidadDevolver < 1 || cantidadDevolver > cantidadMaxima) return
+    if (!detalleDevolucion || !notaCompleta) return
+    const cantNum = parseInt(cantidadDevolver, 10)
+    if (isNaN(cantNum) || cantNum < 1 || cantNum > cantidadMaxima) {
+      setErrorDevolucion(`Ingresa una cantidad válida entre 1 y ${cantidadMaxima}.`)
+      return
+    }
 
     setDevolviendo(true)
     setErrorDevolucion(null)
@@ -117,9 +122,11 @@ export default function PedidosPage() {
       nota_id: notaCompleta.id,
       producto_id: detalleDevolucion.producto_id,
       detalle_nota_id: detalleDevolucion.id,
-      cantidad_devuelta: cantidadDevolver,
-      monto_descontado: cantidadDevolver * detalleDevolucion.precio_unitario_usd,
-      motivo,
+      cantidad_devuelta: cantNum,
+      monto_descontado: cantNum * detalleDevolucion.precio_unitario_usd,
+      motivo: motivo.trim() || 'Devolución de producto',
+      usuario_id: user?.id ?? null,
+      fecha: new Date().toISOString(),
     })
 
     setDevolviendo(false)
@@ -350,11 +357,10 @@ export default function PedidosPage() {
               </label>
               <input
                 id="cant-devolver"
-                type="number"
-                min={1}
-                max={cantidadMaxima}
+                type="text"
+                inputMode="numeric"
                 value={cantidadDevolver}
-                onChange={(e) => setCantidadDevolver(Number(e.target.value))}
+                onChange={(e) => setCantidadDevolver(e.target.value)}
                 className="w-full rounded-xl border border-border bg-muted/40 px-4 py-2.5 font-mono text-sm focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
               />
             </div>
@@ -373,7 +379,7 @@ export default function PedidosPage() {
             <p className="text-xs text-muted-foreground">
               Monto a descontar:{' '}
               <span className="font-mono font-semibold text-foreground">
-                {formatUsd(cantidadDevolver * detalleDevolucion.precio_unitario_usd)}
+                {formatUsd((parseInt(cantidadDevolver, 10) || 0) * detalleDevolucion.precio_unitario_usd)}
               </span>
             </p>
             {errorDevolucion && (

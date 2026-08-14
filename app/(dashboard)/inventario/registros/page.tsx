@@ -62,7 +62,7 @@ export default function RegistrosPage({ searchParams }: RegistrosPageProps) {
   const [modalAbierto, setModalAbierto] = useState(false)
   const [productoSeleccionado, setProductoSeleccionado] = useState<ProductoConStock | null>(null)
   const [tipoMovimiento, setTipoMovimiento] = useState<'entrada' | 'salida'>('entrada')
-  const [cantidad, setCantidad] = useState(10)
+  const [cantidad, setCantidad] = useState('10')
   const [motivo, setMotivo] = useState('Ingreso de imprenta / proveedor')
   const [guardando, setGuardando] = useState(false)
   const [errorModal, setErrorModal] = useState<string | null>(null)
@@ -100,8 +100,10 @@ export default function RegistrosPage({ searchParams }: RegistrosPageProps) {
   }, [cargarDatos])
 
   const handleGuardarMovimiento = async () => {
-    if (!productoSeleccionado || cantidad <= 0) {
-      setErrorModal('Selecciona un producto y una cantidad mayor a 0.')
+    const cantNum = parseInt(cantidad, 10)
+
+    if (!productoSeleccionado || isNaN(cantNum) || cantNum <= 0) {
+      setErrorModal('Ingresa una cantidad válida mayor a 0.')
       return
     }
 
@@ -111,7 +113,7 @@ export default function RegistrosPage({ searchParams }: RegistrosPageProps) {
     const { error } = await registrarMovimientoManual({
       producto_id: productoSeleccionado.id,
       tipo: tipoMovimiento,
-      cantidad,
+      cantidad: cantNum,
       motivo: motivo.trim() || 'Ajuste manual de almacén',
       usuario_id: user?.id ?? null,
       nota_id: null,
@@ -391,10 +393,11 @@ export default function RegistrosPage({ searchParams }: RegistrosPageProps) {
                 Cantidad
               </label>
               <input
-                type="number"
-                min="1"
+                type="text"
+                inputMode="numeric"
                 value={cantidad}
-                onChange={(e) => setCantidad(Number(e.target.value))}
+                onChange={(e) => setCantidad(e.target.value)}
+                placeholder="10"
                 className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-mono focus:border-primary-accent/50 focus:outline-none"
               />
             </div>

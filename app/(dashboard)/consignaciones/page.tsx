@@ -602,9 +602,8 @@ export default function ConsignacionesPage() {
                       </td>
                       <td className="px-2 py-2.5 text-center">
                         <input
-                          type="number"
-                          min="0"
-                          max={maxActivos}
+                          type="text"
+                          inputMode="numeric"
                           value={vals.vendidos || ''}
                           onChange={(e) => handleCorteChange(det.id, 'vendidos', e.target.value, maxActivos)}
                           className="w-14 rounded-lg border border-border bg-background px-2 py-1 text-center font-mono text-xs focus:border-primary-accent/50 focus:outline-none"
@@ -613,9 +612,8 @@ export default function ConsignacionesPage() {
                       </td>
                       <td className="px-2 py-2.5 text-center">
                         <input
-                          type="number"
-                          min="0"
-                          max={maxActivos}
+                          type="text"
+                          inputMode="numeric"
                           value={vals.devueltos || ''}
                           onChange={(e) => handleCorteChange(det.id, 'devueltos', e.target.value, maxActivos)}
                           className="w-14 rounded-lg border border-border bg-background px-2 py-1 text-center font-mono text-xs focus:border-primary-accent/50 focus:outline-none"
