@@ -76,6 +76,7 @@ export default function PedidosPage() {
 
   // Carga inicial: delega en cargarNotas para no duplicar la lógica.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarNotas()
   }, [cargarNotas])
 

@@ -15,7 +15,8 @@ import {
   Plus,
   ShoppingBag,
   Users,
-  FileClock
+  GraduationCap,
+  Handshake
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -56,9 +57,14 @@ const navigation: NavItem[] = [
     icon: ShoppingCart 
   },
   { 
-    name: 'Notas Flotantes', 
-    href: '/flotantes', 
-    icon: FileClock 
+    name: 'Promociones', 
+    href: '/promociones', 
+    icon: GraduationCap 
+  },
+  { 
+    name: 'Consignaciones', 
+    href: '/consignaciones', 
+    icon: Handshake 
   },
   { 
     name: 'Clientes', 

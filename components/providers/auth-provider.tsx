@@ -44,6 +44,7 @@ interface AuthProviderProps {
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(MOCK_USER)
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const login = useCallback(async (email: string, _password: string) => {
     // Simulación: acepta cualquier credencial y restaura el usuario mock.
     await new Promise((resolve) => setTimeout(resolve, 300))

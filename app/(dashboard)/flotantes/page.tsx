@@ -15,7 +15,6 @@ import { useCallback, useEffect, useState } from 'react'
 import {
   RotateCcw,
   CheckCircle,
-  Clock,
   Building2,
   ShoppingBag,
   Receipt,
@@ -23,7 +22,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Drawer } from '@/components/ui/drawer'
 import { Modal } from '@/components/ui/modal'
 import { ErrorMessage } from '@/components/ui/error-message'
@@ -34,7 +33,6 @@ import {
   procesarCorteConsignacion,
   type Nota,
   type NotaCompleta,
-  type DetalleNota,
   type ItemCorte,
 } from '@/lib/actions/notas'
 import { formatUsd, formatDate } from '@/lib/format'
@@ -72,6 +70,7 @@ export default function FlotantesPage() {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarNotas()
   }, [cargarNotas])
 

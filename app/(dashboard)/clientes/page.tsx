@@ -111,6 +111,7 @@ export default function ClientesPage() {
   }, [filtroTipo])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     cargarClientes()
   }, [cargarClientes])
 
