@@ -22,6 +22,12 @@ export default async function ConsignacionesPage() {
     )
   }
 
-  // Cast compatible type
-  return <ConsignacionesClient initialConsignaciones={(initialConsignaciones as any) ?? []} />
+  // Cast compatible type without explicit 'any'
+  return (
+    <ConsignacionesClient
+      initialConsignaciones={
+        (initialConsignaciones as unknown as Parameters<typeof ConsignacionesClient>[0]['initialConsignaciones']) ?? []
+      }
+    />
+  )
 }

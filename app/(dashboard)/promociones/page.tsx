@@ -22,6 +22,12 @@ export default async function PromocionesPage() {
     )
   }
 
-  // Cast compatible type
-  return <PromocionesClient initialPromociones={(initialPromociones as any) ?? []} />
+  // Cast compatible type without explicit 'any'
+  return (
+    <PromocionesClient
+      initialPromociones={
+        (initialPromociones as unknown as Parameters<typeof PromocionesClient>[0]['initialPromociones']) ?? []
+      }
+    />
+  )
 }

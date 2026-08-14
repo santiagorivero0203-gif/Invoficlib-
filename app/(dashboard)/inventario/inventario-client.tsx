@@ -465,7 +465,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
             <input
               type="text"
               value={formProducto.descripcion}
-              onChange={(e) => setFormProducto({ ...formProducto, description: e.target.value } as any)}
+              onChange={(e) => setFormProducto({ ...formProducto, descripcion: e.target.value })}
               placeholder="Ej: Primaria, Tapa blanda"
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-primary-accent/50 focus:outline-none"
             />

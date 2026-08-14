@@ -22,6 +22,12 @@ export default async function InventarioPage() {
     )
   }
 
-  // Cast compatible type
-  return <InventarioClient initialProductos={(initialProductos as any) ?? []} />
+  // Cast compatible type without explicit 'any'
+  return (
+    <InventarioClient
+      initialProductos={
+        (initialProductos as unknown as Parameters<typeof InventarioClient>[0]['initialProductos']) ?? []
+      }
+    />
+  )
 }

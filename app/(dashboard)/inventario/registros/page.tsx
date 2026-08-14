@@ -32,10 +32,12 @@ export default async function RegistrosPage({ searchParams }: RegistrosPageProps
     )
   }
 
-  // Cast compatible type
+  // Cast compatible type without explicit 'any'
   return (
     <RegistrosClient
-      initialMovimientos={(movResult.data as any) ?? []}
+      initialMovimientos={
+        (movResult.data as unknown as Parameters<typeof RegistrosClient>[0]['initialMovimientos']) ?? []
+      }
       initialProductos={prodResult.data ?? []}
       tipoInicial={tipoInicial}
     />
