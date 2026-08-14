@@ -57,7 +57,6 @@ const navigation: NavItem[] = [
     icon: Boxes,
     subItems: [
       { name: 'Inventario', href: '/inventario' },
-      { name: 'Recetas / Combos', href: '/inventario/recetas' },
       { name: 'Servicios', href: '/inventario/servicios' },
       { 
         name: 'Registros', 
