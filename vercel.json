@@ -1,1 +1,3 @@
-{" rewrites\: [], \redirects\: []}
+{
+  "framework": "nextjs"
+}
