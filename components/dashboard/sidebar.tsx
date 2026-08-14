@@ -303,10 +303,10 @@ export default function Sidebar({ isOpen = false, setIsOpen }: SidebarProps) {
       </nav>
 
       {/* Footer info */}
-      <div className="border-t border-border pt-4 mt-auto">
-        <div className="flex items-center justify-between text-xs text-muted-foreground px-1">
+      <div className="border-t border-border pt-3 mt-auto">
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground px-1">
           <span className="font-mono">v1.2.0</span>
-          <span>Apple Minimal UI</span>
+          <span>Invoficlib</span>
         </div>
       </div>
     </div>
