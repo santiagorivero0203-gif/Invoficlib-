@@ -14,12 +14,16 @@ import { getResumenFinanciero, type ResumenFinanciero } from '@/lib/actions/cuen
 import { getTasaVigente } from '@/lib/actions/tasa'
 import { formatUsd, formatVes } from '@/lib/format'
 import { cn, errorMessage } from '@/lib/utils'
+import { useAuth } from '@/components/providers/auth-provider'
 
 export default function CuentasPage() {
   const [resumen, setResumen] = useState<ResumenFinanciero | null>(null)
   const [tasaVes, setTasaVes] = useState<number | null>(null)
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const { user } = useAuth()
+  const esAdmin = user?.rol === 'admin'
 
   useEffect(() => {
     ;(async () => {
@@ -40,7 +44,20 @@ export default function CuentasPage() {
       }
       setCargando(false)
     })()
-  }, [])
+  }, [esAdmin])
+
+  if (!esAdmin) {
+    return (
+      <div className="space-y-6 md:space-y-8 animate-fade-in">
+        <div>
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">Acceso Denegado</h2>
+          <p className="text-muted-foreground">
+            No tienes los permisos necesarios para ver el resumen financiero.
+          </p>
+        </div>
+      </div>
+    )
+  }
 
   if (cargando) {
     return (

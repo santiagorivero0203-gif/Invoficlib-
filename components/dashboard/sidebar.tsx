@@ -13,10 +13,13 @@ import {
   ChevronDown,
   X,
   Plus,
-  ShoppingBag
+  ShoppingBag,
+  Users,
+  FileClock
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/components/providers/auth-provider'
 
 interface SidebarProps {
   isOpen?: boolean
@@ -51,6 +54,16 @@ const navigation: NavItem[] = [
     name: 'Pedidos', 
     href: '/pedidos', 
     icon: ShoppingCart 
+  },
+  { 
+    name: 'Notas Flotantes', 
+    href: '/flotantes', 
+    icon: FileClock 
+  },
+  { 
+    name: 'Clientes', 
+    href: '/clientes', 
+    icon: Users 
   },
   { 
     name: 'Inventario', 
@@ -89,6 +102,9 @@ const navigation: NavItem[] = [
 
 export default function Sidebar({ isOpen = false, setIsOpen }: SidebarProps) {
   const pathname = usePathname()
+  const { user } = useAuth()
+  const esAdmin = user?.rol === 'admin'
+
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'Inventario': true,
     'Registros': false
@@ -143,8 +159,13 @@ export default function Sidebar({ isOpen = false, setIsOpen }: SidebarProps) {
       </div>
 
       {/* Navigation Tree */}
-      <nav className="flex-1 space-y-1.5 overflow-y-auto pr-1">
+      <nav className="flex-1 space-y-2 py-4 pb-24 overflow-y-auto overflow-x-hidden invisible-scrollbar pr-2">
         {navigation.map((item) => {
+          // RBAC: Ocultar Cuentas y Gastos a la Secretaria
+          if (!esAdmin && (item.name === 'Cuentas' || item.name === 'Gastos')) {
+            return null
+          }
+          
           const hasSubItems = Boolean(item.subItems && item.subItems.length > 0)
           const isSectionExpanded = Boolean(expandedSections[item.name])
           const isActive = item.href 

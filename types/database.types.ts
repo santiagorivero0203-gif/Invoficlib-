@@ -1,3 +1,12 @@
+/**
+ * types/database.types.ts
+ * -------------------------------------------------------
+ * Tipos TypeScript generados manualmente a partir del
+ * esquema de Supabase. Fase 3: incluye tipo_salida,
+ * estado_flotante, tipo_cliente y nota_id en movimientos.
+ * -------------------------------------------------------
+ */
+
 export type Json =
   | string
   | number
@@ -6,27 +15,59 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+/** Enum: tipo de salida de una nota */
+export type TipoSalida = 'venta' | 'promocion' | 'consignacion'
+
+/** Enum: estado flotante de una nota (promoción/consignación) */
+export type EstadoFlotante = 'abierta' | 'cerrada'
+
+/** Enum: tipo de cliente */
+export type TipoCliente = 'colegio' | 'vendedor' | 'general'
+
+/** Enum: rol de usuario */
+export type UserRole = 'admin' | 'secretaria'
+
 export interface Database {
   public: {
     Views: Record<string, never>
-    Functions: Record<string, never>
+    Functions: {
+      obtener_resumen_financiero: {
+        Args: Record<string, never>
+        Returns: {
+          ingresos_usd: number
+          cogs_usd: number
+          utilidad_bruta_usd: number
+          gastos_op_usd: number
+          utilidad_neta_usd: number
+          margen_neto_pct: number
+        }[]
+      }
+      liquidar_promocion: {
+        Args: { p_nota_id: string }
+        Returns: Json
+      }
+      procesar_corte_consignacion: {
+        Args: { p_nota_id: string; p_items: Json }
+        Returns: Json
+      }
+    }
     Tables: {
       perfiles: {
         Row: {
           id: string
-          rol: 'admin' | 'secretaria'
+          rol: UserRole
           nombre_completo: string
           fecha_creacion: string
         }
         Insert: {
           id: string
-          rol?: 'admin' | 'secretaria'
+          rol?: UserRole
           nombre_completo: string
           fecha_creacion?: string
         }
         Update: {
           id?: string
-          rol?: 'admin' | 'secretaria'
+          rol?: UserRole
           nombre_completo?: string
           fecha_creacion?: string
         }
@@ -92,8 +133,9 @@ export interface Database {
           producto_id: string
           tipo: 'entrada' | 'salida'
           cantidad: number
-          usuario_id: string
+          usuario_id: string | null
           motivo: string | null
+          nota_id: string | null
           fecha_creacion: string
         }
         Insert: {
@@ -101,8 +143,9 @@ export interface Database {
           producto_id: string
           tipo: 'entrada' | 'salida'
           cantidad: number
-          usuario_id: string
+          usuario_id?: string | null
           motivo?: string | null
+          nota_id?: string | null
           fecha_creacion?: string
         }
         Update: {
@@ -110,8 +153,9 @@ export interface Database {
           producto_id?: string
           tipo?: 'entrada' | 'salida'
           cantidad?: number
-          usuario_id?: string
+          usuario_id?: string | null
           motivo?: string | null
+          nota_id?: string | null
           fecha_creacion?: string
         }
         Relationships: []
@@ -121,24 +165,24 @@ export interface Database {
           id: string
           nombre: string
           telefono: string | null
-          documento_id: string | null
-          direccion: string | null
+          tipo: TipoCliente
+          contacto: string | null
           fecha_creacion: string
         }
         Insert: {
           id?: string
           nombre: string
           telefono?: string | null
-          documento_id?: string | null
-          direccion?: string | null
+          tipo?: TipoCliente
+          contacto?: string | null
           fecha_creacion?: string
         }
         Update: {
           id?: string
           nombre?: string
           telefono?: string | null
-          documento_id?: string | null
-          direccion?: string | null
+          tipo?: TipoCliente
+          contacto?: string | null
           fecha_creacion?: string
         }
         Relationships: []
@@ -153,6 +197,8 @@ export interface Database {
           subtotal_usd: number
           total_usd: number
           estado: 'pagada' | 'parcial' | 'anulada'
+          tipo_salida: TipoSalida
+          estado_flotante: EstadoFlotante
           observaciones: string | null
           fecha_creacion: string
           fecha_actualizacion: string
@@ -166,6 +212,8 @@ export interface Database {
           subtotal_usd?: number
           total_usd?: number
           estado?: 'pagada' | 'parcial' | 'anulada'
+          tipo_salida?: TipoSalida
+          estado_flotante?: EstadoFlotante
           observaciones?: string | null
           fecha_creacion?: string
           fecha_actualizacion?: string
@@ -179,6 +227,8 @@ export interface Database {
           subtotal_usd?: number
           total_usd?: number
           estado?: 'pagada' | 'parcial' | 'anulada'
+          tipo_salida?: TipoSalida
+          estado_flotante?: EstadoFlotante
           observaciones?: string | null
           fecha_creacion?: string
           fecha_actualizacion?: string

@@ -13,6 +13,7 @@ import {
   getNotas,
   getNotaCompleta,
   crearDevolucion,
+  eliminarNota,
   type Nota,
   type NotaCompleta,
   type DetalleNota,
@@ -20,6 +21,7 @@ import {
 } from '@/lib/actions/notas'
 import { formatUsd, formatDate } from '@/lib/format'
 import { cn, errorMessage } from '@/lib/utils'
+import { useAuth } from '@/components/providers/auth-provider'
 
 const estadoBadgeMap = {
   pagada: 'pagada' as const,
@@ -44,6 +46,9 @@ export default function PedidosPage() {
   const [notas, setNotas] = useState<NotaListada[]>([])
   const [cargando, setCargando] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const { user } = useAuth()
+  const esAdmin = user?.rol === 'admin'
 
   const [notaSeleccionadaId, setNotaSeleccionadaId] = useState<string | null>(null)
   const [notaCompleta, setNotaCompleta] = useState<NotaCompleta | null>(null)
@@ -122,16 +127,27 @@ export default function PedidosPage() {
       return
     }
 
-    // El trigger trg_procesar_devolucion_dinamica ya recalcula total y estado.
     setDevolucionOk(true)
     setTimeout(() => {
       setDetalleDevolucion(null)
-      setDevolucionOk(false)
+      if (notaSeleccionadaId) {
+        abrirDetalle({ id: notaSeleccionadaId } as NotaListada)
+      }
+      cargarNotas()
     }, 1500)
+  }
 
-    // Refrescar drawer y listado con los nuevos totales.
-    const { data } = await getNotaCompleta(notaCompleta.id)
-    if (data) setNotaCompleta(data)
+  const handleEliminarNota = async (id: string) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar (anular) esta nota por completo? Esta acción no se puede deshacer.')) return
+    
+    const { error } = await eliminarNota(id)
+    if (error) {
+      alert(errorMessage(error))
+      return
+    }
+    
+    setNotaSeleccionadaId(null)
+    setNotaCompleta(null)
     cargarNotas()
   }
 
@@ -296,6 +312,18 @@ export default function PedidosPage() {
                   </p>
                 )}
               </div>
+
+              {esAdmin && (
+                <div className="mt-6 border-t border-border pt-4">
+                  <Button
+                    variant="ghost"
+                    className="w-full text-rose-500 hover:bg-rose-500/10 hover:text-rose-600"
+                    onClick={() => handleEliminarNota(notaCompleta.id)}
+                  >
+                    Anular / Eliminar Nota
+                  </Button>
+                </div>
+              )}
             </div>
           )
         )}

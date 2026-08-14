@@ -15,6 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ErrorMessage } from '@/components/ui/error-message'
 import { crearNota } from '@/lib/actions/notas'
 import type { ProductoConStock } from '@/lib/actions/productos'
+import type { Cliente } from '@/lib/actions/clientes'
+import type { TipoSalida, EstadoFlotante } from '@/types/database.types'
 import { formatUsd, formatVes } from '@/lib/format'
 import { cn, errorMessage } from '@/lib/utils'
 
@@ -36,14 +38,17 @@ interface VenderClientProps {
   productos: ProductoConStock[]
   /** Tasa USD/VES vigente; `null` si no hay ninguna registrada. */
   tasaVes: number | null
+  /** Lista de clientes activos. */
+  clientes: Cliente[]
 }
 
-export default function VenderClient({ productos, tasaVes }: VenderClientProps) {
+export default function VenderClient({ productos, tasaVes, clientes }: VenderClientProps) {
   const tasa = tasaVes ?? TASA_FALLBACK
   const [busqueda, setBusqueda] = useState('')
   const [moneda, setMoneda] = useState<Moneda>('USD')
   const [carrito, setCarrito] = useState<ItemCarrito[]>([])
-  const [cliente, setCliente] = useState('Cliente General')
+  const [clienteId, setClienteId] = useState<string>('')
+  const [tipoSalida, setTipoSalida] = useState<TipoSalida>('venta')
   const [emitiendo, setEmitiendo] = useState(false)
   const [notaEmitida, setNotaEmitida] = useState(false)
   const [errorEmision, setErrorEmision] = useState<string | null>(null)
@@ -95,16 +100,25 @@ export default function VenderClient({ productos, tasaVes }: VenderClientProps) 
   }
 
   const emitirNota = async () => {
-    if (carrito.length === 0 || emitiendo) return
+    if (carrito.length === 0 || emitiendo || !clienteId) {
+      setErrorEmision('Selecciona un cliente y productos para continuar.')
+      return
+    }
     setEmitiendo(true)
     setErrorEmision(null)
 
+    const clienteSeleccionado = clientes.find(c => c.id === clienteId)
+    const estadoFlotante: EstadoFlotante = tipoSalida === 'venta' ? 'cerrada' : 'abierta'
+
     const { error } = await crearNota(
       {
-        cliente_nombre: cliente || 'Consumidor Final',
+        cliente_id: clienteId,
+        cliente_nombre: clienteSeleccionado?.nombre || 'Desconocido',
+        tipo_salida: tipoSalida,
+        estado_flotante: estadoFlotante,
         subtotal_usd: subtotal,
         total_usd: subtotal,
-        estado: 'pagada',
+        estado: 'pagada', // Estado por defecto; no sumará ingresos si estado_flotante es 'abierta'
       },
       carrito.map((item) => ({
         producto_id: item.productoId,
@@ -224,15 +238,39 @@ export default function VenderClient({ productos, tasaVes }: VenderClientProps) 
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Receipt className="h-5 w-5" />
-                Nota en Curso
+                Nueva Nota
               </CardTitle>
-              <input
-                type="text"
-                value={cliente}
-                onChange={(e) => setCliente(e.target.value)}
-                placeholder="Nombre del cliente"
-                className="mt-2 w-full rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
-              />
+              <div className="mt-4 space-y-3">
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    Cliente <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={clienteId}
+                    onChange={(e) => setClienteId(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
+                  >
+                    <option value="" disabled>Seleccione un cliente...</option>
+                    {clientes.map(c => (
+                      <option key={c.id} value={c.id}>{c.nombre}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                    Tipo de Salida <span className="text-rose-500">*</span>
+                  </label>
+                  <select
+                    value={tipoSalida}
+                    onChange={(e) => setTipoSalida(e.target.value as TipoSalida)}
+                    className="w-full rounded-xl border border-border bg-muted/40 px-3 py-2 text-sm focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
+                  >
+                    <option value="venta">Venta Directa</option>
+                    <option value="promocion">Promoción (Flotante)</option>
+                    <option value="consignacion">Consignación (Flotante)</option>
+                  </select>
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="space-y-4">
               {carrito.length === 0 ? (
@@ -324,7 +362,7 @@ export default function VenderClient({ productos, tasaVes }: VenderClientProps) 
               <p className="text-xs text-muted-foreground">{carrito.length} productos</p>
               <p className="font-mono text-lg font-bold">{formatPrecio(subtotal)}</p>
             </div>
-            <Button variant="primary" disabled={emitiendo} onClick={emitirNota}>
+            <Button variant="primary" disabled={emitiendo || !clienteId} onClick={emitirNota}>
               {emitiendo ? 'Emitiendo...' : 'Emitir Nota'}
             </Button>
           </div>
