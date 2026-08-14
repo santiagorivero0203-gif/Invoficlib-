@@ -1,0 +1,8 @@
+# Reglas de Cursor (Referencia)
+Por favor, lee y adhiérete estrictamente a las reglas definidas en los siguientes archivos de este proyecto:
+
+1. `agent.md` - Reglas generales de comportamiento, documentación y resolución de problemas.
+2. `design.md` - Reglas de diseño, estética premium, tipografía, y lineamientos visuales.
+3. `project_description.md` - Descripción general y convenciones de control de versiones.
+
+Tu objetivo principal es mantener la máxima eficiencia junto con el agente Antigravity, documentando rigurosamente todos los cambios en el código.
