@@ -12,7 +12,8 @@ import {
   Settings,
   ChevronDown,
   X,
-  Plus
+  Plus,
+  ShoppingBag
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -38,8 +39,13 @@ interface NavItem {
 const navigation: NavItem[] = [
   { 
     name: 'Dashboard', 
-    href: '/dashboard', 
+    href: '/', 
     icon: LayoutDashboard 
+  },
+  { 
+    name: 'Vender', 
+    href: '/vender', 
+    icon: ShoppingBag 
   },
   { 
     name: 'Pedidos', 
@@ -104,7 +110,7 @@ export default function Sidebar({ isOpen = false, setIsOpen }: SidebarProps) {
     <div className="flex h-full w-full flex-col bg-card text-foreground border-r border-border p-5 transition-colors duration-200">
       {/* Brand Header */}
       <div className="flex items-center justify-between px-1 mb-8">
-        <Link href="/dashboard" className="flex items-center gap-3.5 group" onClick={closeSidebar}>
+        <Link href="/" className="flex items-center gap-3.5 group" onClick={closeSidebar}>
           <div className="flex h-11 w-11 items-center justify-center rounded-[14px] bg-foreground text-background shadow-xs transition-transform duration-200 group-hover:scale-105">
             <Boxes className="h-5 w-5" />
           </div>
@@ -143,7 +149,7 @@ export default function Sidebar({ isOpen = false, setIsOpen }: SidebarProps) {
           const hasSubItems = Boolean(item.subItems && item.subItems.length > 0)
           const isSectionExpanded = Boolean(expandedSections[item.name])
           const isActive = item.href 
-            ? (item.href === '/dashboard' ? pathname === '/' || pathname === '/dashboard' : pathname.startsWith(item.href))
+            ? (item.href === '/' ? pathname === '/' : pathname.startsWith(item.href))
             : item.subItems?.some(sub => pathname.startsWith(sub.href))
 
           if (hasSubItems) {
