@@ -45,7 +45,7 @@ export default function ConfiguracionPage() {
     setGuardandoTasa(false)
 
     if (error) {
-      setMensajeTasa(`Error: ${(error as any).message || 'No se pudo guardar'}`)
+      setMensajeTasa(`Error: ${error.message || 'No se pudo guardar'}`)
     } else {
       setMensajeTasa(`Tasa ${moneda} actualizada con éxito a ${valor.toFixed(2)} Bs. ✓`)
       if (moneda === 'USD') setTasaUsdManual('')

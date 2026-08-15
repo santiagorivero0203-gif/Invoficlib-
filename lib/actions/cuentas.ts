@@ -103,5 +103,5 @@ export async function getTasaVigente(): Promise<{
     .single()
 
   if (error || !data) return { data: null, error }
-  return { data: (data as any).tasa, error: null }
+  return { data: (data as { tasa: number }).tasa, error: null }
 }

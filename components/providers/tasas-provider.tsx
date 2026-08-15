@@ -58,16 +58,43 @@ export function TasasProvider({ children }: { children: React.ReactNode }) {
       const res = await fetch('/api/cron/sync-tasas', { cache: 'no-store' })
       if (!res.ok) throw new Error('Error al sincronizar tasas con el BCV')
       await cargarTasas()
-    } catch (err: any) {
-      setError(err.message || 'Error de red')
+    } catch (err) {
+      const errorObj = err as Error
+      setError(errorObj.message || 'Error de red')
     } finally {
       setSincronizando(false)
     }
   }
 
   useEffect(() => {
-    // 1. Cargar las tasas iniciales
-    cargarTasas()
+    let active = true
+
+    // 1. Cargar las tasas iniciales de forma segura
+    const inicializar = async () => {
+      const supabase = createClient()
+      const { data, error: err } = await supabase
+        .from('tasas_cambio')
+        .select('*')
+        .order('fecha_creacion', { ascending: false })
+
+      if (err) {
+        if (active) setError(err.message)
+        return
+      }
+
+      if (data && data.length > 0 && active) {
+        const ultimas: Record<string, number> = {}
+        for (const fila of data) {
+          if (!ultimas[fila.moneda]) {
+            ultimas[fila.moneda] = Number(fila.tasa)
+          }
+        }
+        if (ultimas.USD) setTasaUsd(ultimas.USD)
+        if (ultimas.EUR) setTasaEur(ultimas.EUR)
+      }
+    }
+
+    inicializar()
 
     // 2. Suscribir a cambios en tiempo real
     const supabase = createClient()
@@ -77,6 +104,7 @@ export function TasasProvider({ children }: { children: React.ReactNode }) {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'tasas_cambio' },
         (payload) => {
+          if (!active) return
           const nueva = payload.new as TasaCambio
           const valor = Number(nueva.tasa)
           if (nueva.moneda === 'USD') {
@@ -89,6 +117,7 @@ export function TasasProvider({ children }: { children: React.ReactNode }) {
       .subscribe()
 
     return () => {
+      active = false
       supabase.removeChannel(canal)
     }
   }, [])

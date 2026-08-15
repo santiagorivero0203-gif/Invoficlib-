@@ -36,7 +36,7 @@ export async function GET(request: Request) {
 
   for (const { moneda, endpoint } of monedas) {
     try {
-      const response = await fetch(`${DOLAR_API_BASE}/${moneda === 'USD' ? 'dolares' : 'euros'}/oficial`, {
+      const response = await fetch(`${DOLAR_API_BASE}/${endpoint}`, {
         cache: 'no-store',
       })
 
@@ -67,8 +67,9 @@ export async function GET(request: Request) {
       }
 
       result[moneda] = promedio
-    } catch (error: any) {
-      result[moneda] = `Error: ${error.message}`
+    } catch (error) {
+      const err = error as Error
+      result[moneda] = `Error: ${err.message}`
     }
   }
 
