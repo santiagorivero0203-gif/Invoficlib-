@@ -13,9 +13,7 @@ export default async function PromocionesPage() {
       <div className="space-y-6 animate-fade-in">
         <div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground">Promociones & Muestras</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Libros prestados a colegios y docentes para evaluación de listas escolares. Salidas flotantes con devoluciones continuas.
-          </p>
+
         </div>
         <ErrorMessage message={errorMessage(error)} />
       </div>

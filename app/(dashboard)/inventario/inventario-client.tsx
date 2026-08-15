@@ -39,6 +39,20 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
   const [error, setError] = useState<string | null>(null)
   const [busqueda, setBusqueda] = useState('')
 
+  // Filtros de búsqueda adicionales
+  const [ocultarAgotados, setOcultarAgotados] = useState(false)
+  const [mostrarBajoStock, setMostrarBajoStock] = useState(false)
+  const [mostrarUbicacion, setMostrarUbicacion] = useState(false)
+  const [mostrarPrecio, setMostrarPrecio] = useState(true)
+
+  const limpiarFiltros = () => {
+    setOcultarAgotados(false)
+    setMostrarBajoStock(false)
+    setMostrarUbicacion(false)
+    setMostrarPrecio(true)
+    setBusqueda('')
+  }
+
   // Modal Nuevo/Editar Producto
   const [modalProductoAbierto, setModalProductoAbierto] = useState(false)
   const [editandoId, setEditandoId] = useState<string | null>(null)
@@ -209,11 +223,17 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
     cargarProductos()
   }
 
-  const productosFiltrados = productos.filter(
-    (p) =>
+  const productosFiltrados = productos.filter((p) => {
+    const coincideTexto =
       p.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
       p.codigo_sku.toLowerCase().includes(busqueda.toLowerCase())
-  )
+    
+    if (!coincideTexto) return false
+    if (ocultarAgotados && p.stock === 0) return false
+    if (mostrarBajoStock && p.stock > p.stock_minimo) return false
+    
+    return true
+  })
 
   const totalItems = productos.length
   const totalUnidades = productos.reduce((acc, p) => acc + p.stock, 0)
@@ -302,112 +322,185 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
         </Card>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 sm:max-w-md">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <input
-            type="search"
-            placeholder="Buscar por título, SKU o autor..."
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-xs focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
-          />
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 items-start">
+        {/* Panel de Filtros a la Izquierda */}
+        <div className="space-y-4 lg:col-span-1">
+          <Card className="p-4">
+            <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-4">
+              <h3 className="font-bold text-sm text-foreground">Filtros</h3>
+              <button
+                type="button"
+                onClick={limpiarFiltros}
+                className="text-xs text-primary-accent hover:underline font-semibold"
+              >
+                Limpiar filtros
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <label className="flex items-center justify-between gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                <span>Ocultar productos agotados</span>
+                <input
+                  type="checkbox"
+                  checked={ocultarAgotados}
+                  onChange={(e) => setOcultarAgotados(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary-accent focus:ring-primary-accent/30"
+                />
+              </label>
+
+              <label className="flex items-center justify-between gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                <span>Mostrar inventario bajo</span>
+                <input
+                  type="checkbox"
+                  checked={mostrarBajoStock}
+                  onChange={(e) => setMostrarBajoStock(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary-accent focus:ring-primary-accent/30"
+                />
+              </label>
+
+              <label className="flex items-center justify-between gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                <span>Mostrar ubicación</span>
+                <input
+                  type="checkbox"
+                  checked={mostrarUbicacion}
+                  onChange={(e) => setMostrarUbicacion(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary-accent focus:ring-primary-accent/30"
+                />
+              </label>
+
+              <label className="flex items-center justify-between gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
+                <span>Mostrar precio de venta</span>
+                <input
+                  type="checkbox"
+                  checked={mostrarPrecio}
+                  onChange={(e) => setMostrarPrecio(e.target.checked)}
+                  className="h-4 w-4 rounded border-border text-primary-accent focus:ring-primary-accent/30"
+                />
+              </label>
+            </div>
+          </Card>
+        </div>
+
+        {/* Tabla y Buscador a la Derecha */}
+        <div className="lg:col-span-3 space-y-4">
+          <div className="relative w-full">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" />
+            <input
+              type="search"
+              placeholder="Buscar por título, SKU o autor..."
+              value={busqueda}
+              onChange={(e) => setBusqueda(e.target.value)}
+              className="w-full rounded-xl border border-border bg-card py-3.5 pl-12 pr-5 text-sm placeholder:text-muted-foreground/50 focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
+            />
+          </div>
+
+          {error && <ErrorMessage message={error} />}
+
+          {cargando && productos.length === 0 ? (
+            <div className="flex items-center justify-center py-16">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/20 border-t-foreground" />
+            </div>
+          ) : productosFiltrados.length === 0 ? (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-16">
+                <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
+                <p className="font-medium text-foreground">No hay libros registrados en el inventario.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <Card>
+              <CardContent className="p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-border text-left">
+                        <th className="px-4 py-3 font-medium text-muted-foreground">SKU / Código</th>
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Título / Producto</th>
+                        {mostrarPrecio && (
+                          <th className="px-4 py-3 font-medium text-muted-foreground">Precio USD</th>
+                        )}
+                        <th className="px-4 py-3 font-medium text-muted-foreground">Stock Disponible</th>
+                        {mostrarUbicacion && (
+                          <th className="px-4 py-3 font-medium text-muted-foreground">Ubicación</th>
+                        )}
+                        <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Mínimo</th>
+                        <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {productosFiltrados.map((p) => {
+                        const bajo = p.stock <= p.stock_minimo
+                        return (
+                          <tr
+                            key={p.id}
+                            className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors"
+                          >
+                            <td className="px-4 py-3 font-mono text-xs font-medium text-foreground">
+                              {p.codigo_sku}
+                            </td>
+                            <td className="px-4 py-3">
+                              <p className="font-semibold text-foreground">{p.nombre}</p>
+                              {p.descripcion && (
+                                <p className="text-xs text-muted-foreground truncate max-w-xs">{p.descripcion}</p>
+                              )}
+                            </td>
+                            {mostrarPrecio && (
+                              <td className="px-4 py-3 font-mono font-medium text-foreground">
+                                {formatUsd(p.precio_usd)}
+                              </td>
+                            )}
+                            <td className="px-4 py-3 font-mono">
+                              <div className="flex items-center gap-2">
+                                <span className={cn('font-bold text-base', bajo ? 'text-amber-600' : 'text-foreground')}>
+                                  {p.stock}
+                                </span>
+                                {bajo && (
+                                  <Badge variant="warning" className="text-[10px] px-1.5 py-0">
+                                    Bajo
+                                  </Badge>
+                                )}
+                              </div>
+                            </td>
+                            {mostrarUbicacion && (
+                              <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
+                                Bodega Central (Estante {p.codigo_sku.slice(-2)})
+                              </td>
+                            )}
+                            <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground sm:table-cell">
+                              {p.stock_minimo} uds.
+                            </td>
+                            <td className="px-4 py-3 text-right">
+                              <div className="flex items-center justify-end gap-1">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-8 px-2.5 text-xs"
+                                  onClick={() => abrirCargarStock(p)}
+                                >
+                                  <PackagePlus className="mr-1 h-3.5 w-3.5" />
+                                  Stock
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 w-8 p-0"
+                                  onClick={() => abrirEditarProducto(p)}
+                                >
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
-
-      {error && <ErrorMessage message={error} />}
-
-      {cargando && productos.length === 0 ? (
-        <div className="flex items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/20 border-t-foreground" />
-        </div>
-      ) : productosFiltrados.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
-            <p className="font-medium text-foreground">No hay libros registrados en el inventario.</p>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="px-4 py-3 font-medium text-muted-foreground">SKU / Código</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Título / Producto</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Precio USD</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Stock Disponible</th>
-                    <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Mínimo</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {productosFiltrados.map((p) => {
-                    const bajo = p.stock <= p.stock_minimo
-                    return (
-                      <tr
-                        key={p.id}
-                        className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors"
-                      >
-                        <td className="px-4 py-3 font-mono text-xs font-medium text-foreground">
-                          {p.codigo_sku}
-                        </td>
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-foreground">{p.nombre}</p>
-                          {p.descripcion && (
-                            <p className="text-xs text-muted-foreground truncate max-w-xs">{p.descripcion}</p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 font-mono font-medium text-foreground">
-                          {formatUsd(p.precio_usd)}
-                        </td>
-                        <td className="px-4 py-3 font-mono">
-                          <div className="flex items-center gap-2">
-                            <span className={cn('font-bold text-base', bajo ? 'text-amber-600' : 'text-foreground')}>
-                              {p.stock}
-                            </span>
-                            {bajo && (
-                              <Badge variant="warning" className="text-[10px] px-1.5 py-0">
-                                Bajo
-                              </Badge>
-                            )}
-                          </div>
-                        </td>
-                        <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground sm:table-cell">
-                          {p.stock_minimo} uds.
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <div className="flex items-center justify-end gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="h-8 px-2.5 text-xs"
-                              onClick={() => abrirCargarStock(p)}
-                            >
-                              <PackagePlus className="mr-1 h-3.5 w-3.5" />
-                              Stock
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="h-8 w-8 p-0"
-                              onClick={() => abrirEditarProducto(p)}
-                            >
-                              <Pencil className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Modal Nuevo/Editar */}
       <Modal

@@ -78,7 +78,7 @@ const navigation: NavItem[] = [
       { name: 'Inventario', href: '/inventario' },
       { name: 'Servicios', href: '/inventario/servicios' },
       { 
-        name: 'Registros', 
+        name: 'Historial de Movimientos', 
         href: '/inventario/registros',
         subItems: [
           { name: 'General', href: '/inventario/registros' },

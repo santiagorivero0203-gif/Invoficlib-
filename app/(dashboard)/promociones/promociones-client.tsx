@@ -208,9 +208,7 @@ export default function PromocionesClient({ initialPromociones }: PromocionesCli
             </span>
             <h2 className="text-2xl font-bold tracking-tight text-foreground">Promociones & Muestras</h2>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Libros prestados a colegios y docentes para evaluación de listas escolares. Salidas flotantes con devoluciones continuas.
-          </p>
+
         </div>
 
         <div className="flex items-center gap-2">

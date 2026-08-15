@@ -26,7 +26,7 @@ interface AuthContextValue {
 }
 
 const MOCK_USER: AuthUser = {
-  id: '1',
+  id: '00000000-0000-0000-0000-000000000001',
   nombre: 'María Pérez',
   rol: 'secretaria',
   email: 'maria.perez@girasol.local',
