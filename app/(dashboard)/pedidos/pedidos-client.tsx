@@ -162,7 +162,7 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
       cantidad_devuelta: cantNum,
       monto_descontado: cantNum * detalleDevolucion.precio_unitario_usd,
       motivo: motivoDevolucion.trim() || 'Devolución de producto',
-      usuario_id: user?.id ?? null,
+      usuario_id: user?.id || null,
       fecha: new Date().toISOString(),
     })
 
@@ -196,7 +196,7 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
     const { error } = await anularNotaCompleta(
       notaCompleta.id,
       motivoAnulacion,
-      user?.id
+      user?.id || undefined
     )
 
     setAnulando(false)

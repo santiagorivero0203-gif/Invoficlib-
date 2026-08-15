@@ -134,7 +134,7 @@ export default function PromocionesClient({ initialPromociones }: PromocionesCli
       cantidad_devuelta: cantNum,
       monto_descontado: 0, // Las promociones no son deudas monetarias
       motivo: motivoDevolucion.trim() || 'Devolución de muestra escolar',
-      usuario_id: user?.id ?? null,
+      usuario_id: user?.id || null,
       fecha: new Date().toISOString(),
     })
 

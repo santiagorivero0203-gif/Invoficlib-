@@ -98,7 +98,7 @@ export default function RegistrosClient({
       tipo: tipoMovimiento,
       cantidad: cantNum,
       motivo: motivo.trim() || 'Ajuste manual de almacén',
-      usuario_id: user?.id ?? null,
+      usuario_id: user?.id || null,
       nota_id: null,
     })
 

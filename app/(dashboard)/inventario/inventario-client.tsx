@@ -193,7 +193,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
           tipo: 'entrada',
           cantidad: stockIniFinal,
           motivo: 'Carga inicial de inventario',
-          usuario_id: user?.id ?? null,
+          usuario_id: user?.id || null,
           nota_id: null,
         })
       }
@@ -246,7 +246,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
       tipo: tipoMovimiento,
       cantidad: cantNum,
       motivo: motivoAjuste.trim() || 'Ajuste manual de stock',
-      usuario_id: user?.id ?? null,
+      usuario_id: user?.id || null,
       nota_id: null,
     })
 
