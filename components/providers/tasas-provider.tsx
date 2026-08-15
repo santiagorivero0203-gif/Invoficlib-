@@ -16,8 +16,8 @@ interface TasasContextProps {
 
 const TasasContext = createContext<TasasContextProps | undefined>(undefined)
 
-const TASA_FALLBACK_USD = 42.50
-const TASA_FALLBACK_EUR = 46.20
+const TASA_FALLBACK_USD = 771.07
+const TASA_FALLBACK_EUR = 889.45
 
 export function TasasProvider({ children }: { children: React.ReactNode }) {
   const [tasaUsd, setTasaUsd] = useState<number>(TASA_FALLBACK_USD)
@@ -98,21 +98,35 @@ export function TasasProvider({ children }: { children: React.ReactNode }) {
         if (ultimas.EUR) setTasaEur(ultimas.EUR)
       }
 
-      // Sincronización automática silenciosa en segundo plano si la tasa tiene más de 6 horas
+      // Sincronización automática silenciosa si no hay datos o la tasa tiene más de 6 horas
       const haceSeisHoras = Date.now() - 6 * 60 * 60 * 1000
       const requiereSincronizacion = !ultimaFecha || ultimaFecha < haceSeisHoras
 
       if (requiereSincronizacion && active) {
-        fetch('/api/cron/sync-tasas', { cache: 'no-store' })
-          .then((res) => {
-            if (res.ok) {
-              // Supabase Realtime actualizará el estado automáticamente cuando detecte el INSERT,
-              // por lo que no es necesario recargar las tasas manualmente.
+        try {
+          const res = await fetch('/api/cron/sync-tasas', { cache: 'no-store' })
+          if (res.ok && active) {
+            // Recargar tasas explícitamente como respaldo por si Realtime aún no está listo
+            const supabase2 = createClient()
+            const { data: dataNueva } = await supabase2
+              .from('tasas_cambio')
+              .select('*')
+              .order('fecha_creacion', { ascending: false })
+
+            if (dataNueva && dataNueva.length > 0 && active) {
+              const ultimas2: Record<string, number> = {}
+              for (const fila of dataNueva) {
+                if (!ultimas2[fila.moneda]) {
+                  ultimas2[fila.moneda] = Number(fila.tasa)
+                }
+              }
+              if (ultimas2.USD) setTasaUsd(ultimas2.USD)
+              if (ultimas2.EUR) setTasaEur(ultimas2.EUR)
             }
-          })
-          .catch(() => {
-            // Ignorar silenciosamente errores de red para no molestar en la UI
-          })
+          }
+        } catch {
+          // Ignorar silenciosamente errores de red
+        }
       }
     }
 
