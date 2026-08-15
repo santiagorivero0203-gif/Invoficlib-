@@ -155,3 +155,48 @@ input[type="number"] {
   box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4);
 }
 
+/* Transición suave y cinematográfica entre páginas */
+@keyframes pageEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.page-transition {
+  animation: pageEntrance 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+/* Barra de progreso de carga en la parte superior */
+@keyframes topBarGlow {
+  0% {
+    width: 0%;
+    opacity: 1;
+  }
+  50% {
+    width: 75%;
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0;
+  }
+}
+
+.page-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2.5px;
+  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
+  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+  z-index: 9999;
+  animation: topBarGlow 0.45s ease-out forwards;
+  pointer-events: none;
+}
+
