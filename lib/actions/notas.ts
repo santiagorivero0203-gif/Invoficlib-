@@ -197,12 +197,26 @@ export async function crearDevolucion(devolucion: Omit<DevolucionInsert, 'id'>) 
 // ── OPERACIONES FLOTANTES (Fase 3) ──────────────────────
 
 /**
+ * Concluye / Cierra una promoción de muestras escolares.
+ * Los libros que la docente/colegio conservó quedan registrados como muestras
+ * obsequiadas (cortesía promocional), cerrando el registro sin generar deuda ni cobro.
+ *
+ * @param notaId - UUID de la nota de promoción a cerrar.
+ */
+export async function cerrarPromocion(notaId: string) {
+  const supabase = createClient()
+
+  return supabase
+    .from('notas')
+    .update({ estado_flotante: 'cerrada' })
+    .eq('id', notaId)
+    .select()
+    .single()
+}
+
+/**
  * Liquida una nota de tipo 'promocion' que está abierta.
- * Convierte los libros no devueltos en una venta real.
- *
- * Llama a la RPC `liquidar_promocion(p_nota_id)` en Supabase.
- *
- * @param notaId - UUID de la nota de promoción a liquidar.
+ * (Mantenida por compatibilidad de esquemas anteriores).
  */
 export async function liquidarPromocion(notaId: string): Promise<{
   data: LiquidarResult | null

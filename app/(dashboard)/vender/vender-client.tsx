@@ -14,10 +14,12 @@ import {
   Building2,
   ShoppingBag,
   User,
+  AlertTriangle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Modal } from '@/components/ui/modal'
 import { ErrorMessage } from '@/components/ui/error-message'
 import { crearNota } from '@/lib/actions/notas'
 import { crearCliente } from '@/lib/actions/clientes'
@@ -69,6 +71,12 @@ export default function VenderClient({ productos, tasaVes, clientes: clientesIni
   const [emitiendo, setEmitiendo] = useState(false)
   const [notaEmitida, setNotaEmitida] = useState(false)
   const [errorEmision, setErrorEmision] = useState<string | null>(null)
+
+  // Modal de advertencia de stock insuficiente
+  const [modalAdvertenciaStock, setModalAdvertenciaStock] = useState(false)
+  const [itemsInsuficientes, setItemsInsuficientes] = useState<
+    { nombre: string; sku: string; solicitado: number; disponible: number }[]
+  >([])
 
   // Cerrar sugerencias al hacer clic fuera
   useEffect(() => {
@@ -161,7 +169,36 @@ export default function VenderClient({ productos, tasaVes, clientes: clientesIni
     }
   }
 
-  const emitirNota = async () => {
+  const handleIntentarEmitir = () => {
+    if (carrito.length === 0 || emitiendo) {
+      setErrorEmision('Agrega productos al carrito para emitir la nota.')
+      return
+    }
+
+    const insuficientes = carrito
+      .map((item) => {
+        const prod = productos.find((p) => p.id === item.productoId)
+        const disponible = prod?.stock ?? 0
+        return {
+          nombre: item.nombre,
+          sku: item.sku,
+          solicitado: item.cantidad,
+          disponible,
+        }
+      })
+      .filter((i) => i.solicitado > i.disponible)
+
+    if (insuficientes.length > 0) {
+      setItemsInsuficientes(insuficientes)
+      setModalAdvertenciaStock(true)
+      return
+    }
+
+    ejecutarEmision()
+  }
+
+  const ejecutarEmision = async () => {
+    setModalAdvertenciaStock(false)
     const nombreFinal = clienteNombre.trim() || 'Consumidor Final'
 
     if (carrito.length === 0 || emitiendo) {
@@ -535,7 +572,7 @@ export default function VenderClient({ productos, tasaVes, clientes: clientesIni
                 variant="primary"
                 className="w-full"
                 disabled={carrito.length === 0 || emitiendo}
-                onClick={emitirNota}
+                onClick={handleIntentarEmitir}
               >
                 {emitiendo
                   ? 'Emitiendo...'
@@ -552,6 +589,76 @@ export default function VenderClient({ productos, tasaVes, clientes: clientesIni
         </div>
       </div>
 
+      {/* Modal Advertencia de Stock Insuficiente */}
+      <Modal
+        open={modalAdvertenciaStock}
+        onClose={() => setModalAdvertenciaStock(false)}
+        title="Advertencia: Stock Insuficiente en Bodega"
+      >
+        <div className="space-y-4">
+          <div className="flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 p-3.5 text-amber-800 dark:text-amber-300">
+            <AlertTriangle className="h-5 w-5 shrink-0 mt-0.5" />
+            <div className="text-xs space-y-1">
+              <p className="font-semibold">
+                Hay productos en tu nota que superan la existencia física disponible:
+              </p>
+              <p className="text-muted-foreground">
+                Si decides continuar, la nota se emitirá y descontará el inventario en el historial (pudiendo reflejar un ajuste posterior).
+              </p>
+            </div>
+          </div>
+
+          <div className="max-h-48 overflow-y-auto rounded-xl border border-border bg-card">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-muted text-muted-foreground">
+                <tr>
+                  <th className="px-3 py-2 text-left font-medium">Libro</th>
+                  <th className="px-2 py-2 text-center font-medium">Solicitado</th>
+                  <th className="px-2 py-2 text-center font-medium">En Bodega</th>
+                  <th className="px-2 py-2 text-center font-medium text-rose-500">Faltante</th>
+                </tr>
+              </thead>
+              <tbody>
+                {itemsInsuficientes.map((item) => (
+                  <tr key={item.sku} className="border-t border-border/50">
+                    <td className="px-3 py-2">
+                      <p className="font-medium text-foreground">{item.nombre}</p>
+                      <span className="font-mono text-[10px] text-muted-foreground">{item.sku}</span>
+                    </td>
+                    <td className="px-2 py-2 text-center font-mono font-bold text-foreground">
+                      {item.solicitado}
+                    </td>
+                    <td className="px-2 py-2 text-center font-mono text-muted-foreground">
+                      {item.disponible}
+                    </td>
+                    <td className="px-2 py-2 text-center font-mono font-bold text-rose-600">
+                      −{item.solicitado - item.disponible}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <Button
+              variant="ghost"
+              onClick={() => setModalAdvertenciaStock(false)}
+              disabled={emitiendo}
+            >
+              Cancelar y Corregir
+            </Button>
+            <Button
+              variant="primary"
+              onClick={ejecutarEmision}
+              disabled={emitiendo}
+            >
+              {emitiendo ? 'Emitiendo...' : 'Continuar y Emitir Nota'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
       {/* Barra flotante inferior para pantallas móviles */}
       {carrito.length > 0 && (
         <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 p-4 backdrop-blur-md lg:hidden">
@@ -560,7 +667,7 @@ export default function VenderClient({ productos, tasaVes, clientes: clientesIni
               <p className="text-xs text-muted-foreground">{carrito.length} títulos en nota</p>
               <p className="font-mono text-lg font-bold">{formatPrecio(subtotal)}</p>
             </div>
-            <Button variant="primary" disabled={emitiendo} onClick={emitirNota}>
+            <Button variant="primary" disabled={emitiendo} onClick={handleIntentarEmitir}>
               {emitiendo ? 'Emitiendo...' : 'Emitir Nota'}
             </Button>
           </div>
