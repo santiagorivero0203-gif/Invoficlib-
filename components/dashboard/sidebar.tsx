@@ -16,7 +16,8 @@ import {
   ShoppingBag,
   Users,
   GraduationCap,
-  Handshake
+  Handshake,
+  TrendingUp,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
@@ -100,6 +101,14 @@ const navigation: NavItem[] = [
     icon: Receipt 
   },
   { 
+    name: 'Resumen Financiero', 
+    icon: TrendingUp,
+    subItems: [
+      { name: 'Utilidad / Pérdida', href: '/resumen-financiero/utilidad-perdida' },
+      { name: 'Reportes', href: '/resumen-financiero/reportes' }
+    ]
+  },
+  { 
     name: 'Configuración', 
     href: '/configuracion', 
     icon: Settings 
@@ -113,6 +122,7 @@ export default function Sidebar({ isOpen = false, setIsOpen }: SidebarProps) {
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'Inventario': true,
+    'Resumen Financiero': true,
     'Registros': false
   })
 
