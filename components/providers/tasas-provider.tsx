@@ -82,15 +82,37 @@ export function TasasProvider({ children }: { children: React.ReactNode }) {
         return
       }
 
+      let ultimaFecha: number | null = null
+
       if (data && data.length > 0 && active) {
         const ultimas: Record<string, number> = {}
         for (const fila of data) {
           if (!ultimas[fila.moneda]) {
             ultimas[fila.moneda] = Number(fila.tasa)
+            if (!ultimaFecha) {
+              ultimaFecha = new Date(fila.fecha_creacion).getTime()
+            }
           }
         }
         if (ultimas.USD) setTasaUsd(ultimas.USD)
         if (ultimas.EUR) setTasaEur(ultimas.EUR)
+      }
+
+      // Sincronización automática silenciosa en segundo plano si la tasa tiene más de 6 horas
+      const haceSeisHoras = Date.now() - 6 * 60 * 60 * 1000
+      const requiereSincronizacion = !ultimaFecha || ultimaFecha < haceSeisHoras
+
+      if (requiereSincronizacion && active) {
+        fetch('/api/cron/sync-tasas', { cache: 'no-store' })
+          .then((res) => {
+            if (res.ok) {
+              // Supabase Realtime actualizará el estado automáticamente cuando detecte el INSERT,
+              // por lo que no es necesario recargar las tasas manualmente.
+            }
+          })
+          .catch(() => {
+            // Ignorar silenciosamente errores de red para no molestar en la UI
+          })
       }
     }
 
