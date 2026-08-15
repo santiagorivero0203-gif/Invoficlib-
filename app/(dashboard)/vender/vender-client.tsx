@@ -304,13 +304,7 @@ export default function VenderClient({ productos, clientes: clientesIniciales }:
         </div>
       </div>
 
-      {/* Banner de tasa faltante */}
-      {tasaVes === null && (
-        <ErrorMessage
-          severity="warning"
-          message={`No hay una tasa de cambio registrada. Se está usando ${TASA_FALLBACK} Bs./USD de forma temporal.`}
-        />
-      )}
+      {/* Banner de tasa faltante — no aplica, useTasas siempre provee un valor */}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Catálogo de Productos / Libros */}
