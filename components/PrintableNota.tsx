@@ -52,8 +52,86 @@ export default function PrintableNota({
   const subtotalUsd = items.reduce((acc, item) => acc + (Number(item.totalUsd) || (item.cantidad * item.precioUsd)), 0)
   const totalUsd = subtotalUsd
 
+  /**
+   * Abre una ventana emergente con solo el HTML de la nota para imprimir.
+   * Evita que el sidebar, header y otros elementos de la UI aparezcan en la impresión.
+   */
   const handlePrint = () => {
-    window.print()
+    const printContent = document.getElementById('printable-nota-content')
+    if (!printContent) return
+
+    const printWindow = window.open('', '_blank', 'width=900,height=700,toolbar=0,menubar=0,scrollbars=1')
+    if (!printWindow) {
+      // Fallback si el navegador bloquea el popup
+      window.print()
+      return
+    }
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html lang="es">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Nota ${nota.correlativo}</title>
+          <style>
+            *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+              font-size: 12px;
+              color: #0f172a;
+              background: white;
+              padding: 24px;
+            }
+            @media print {
+              body { padding: 0; }
+              @page { size: A4; margin: 12mm 15mm; }
+            }
+            table { width: 100%; border-collapse: collapse; }
+            th, td { padding: 8px 10px; text-align: left; }
+            th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; border-bottom: 2px solid #e2e8f0; }
+            td { border-bottom: 1px solid #f1f5f9; font-size: 11px; }
+            .text-right { text-align: right; }
+            .font-mono { font-family: 'Courier New', monospace; }
+            .font-bold { font-weight: 700; }
+            .font-semibold { font-weight: 600; }
+            .text-slate-400 { color: #94a3b8; }
+            .text-slate-500 { color: #64748b; }
+            .text-slate-600 { color: #475569; }
+            .text-slate-700 { color: #334155; }
+            .text-slate-900 { color: #0f172a; }
+            .uppercase { text-transform: uppercase; }
+            .tracking-widest { letter-spacing: 0.15em; }
+            .border-t { border-top: 1px solid #e2e8f0; }
+            .border-b { border-bottom: 1px solid #e2e8f0; }
+            .grid-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+            .totales { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc; }
+            .totales div { display: flex; justify-content: space-between; padding: 4px 0; }
+            .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; }
+          </style>
+        </head>
+        <body>
+          ${printContent.innerHTML}
+        </body>
+      </html>
+    `)
+
+    printWindow.document.close()
+    printWindow.focus()
+
+    // Esperar a que el DOM cargue antes de imprimir
+    printWindow.onload = () => {
+      printWindow.print()
+      printWindow.close()
+    }
+
+    // Fallback si onload no dispara (algunos navegadores)
+    setTimeout(() => {
+      if (!printWindow.closed) {
+        printWindow.print()
+        printWindow.close()
+      }
+    }, 800)
   }
 
   return (
@@ -81,7 +159,10 @@ export default function PrintableNota({
       </div>
 
       {/* DOCUMENTO IMPRIMIBLE (Hoja A4 / Carta) */}
-      <div className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-slate-900 shadow-md print:max-w-none print:shadow-none print:p-6 print:m-0 print:border-0 font-sans">
+      <div
+        id="printable-nota-content"
+        className="mx-auto max-w-4xl bg-white p-8 sm:p-12 text-slate-900 shadow-md print:max-w-none print:shadow-none print:p-6 print:m-0 print:border-0 font-sans"
+      >
         
         {/* HEADER: Membrete a la izquierda & Datos del Cliente / Recibo a la derecha */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start pb-6 border-b border-slate-200">
