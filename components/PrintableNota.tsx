@@ -202,49 +202,14 @@ export default function PrintableNota({
             </div>
           </div>
 
-          {/* Pie de Página: QR Code & Documento No Fiscal */}
-          <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
-            {/* QR Code Simulado SVG */}
-            <div className="flex items-center gap-3">
-              <div className="h-16 w-16 bg-white border border-slate-300 p-1 flex items-center justify-center rounded">
-                <svg viewBox="0 0 100 100" className="h-full w-full fill-slate-900">
-                  {/* Patrón SVG de código QR geométrico */}
-                  <rect x="0" y="0" width="30" height="30" />
-                  <rect x="5" y="5" width="20" height="20" fill="white" />
-                  <rect x="10" y="10" width="10" height="10" />
-                  
-                  <rect x="70" y="0" width="30" height="30" />
-                  <rect x="75" y="5" width="20" height="20" fill="white" />
-                  <rect x="80" y="10" width="10" height="10" />
-
-                  <rect x="0" y="70" width="30" height="30" />
-                  <rect x="5" y="75" width="20" height="20" fill="white" />
-                  <rect x="10" y="80" width="10" height="10" />
-
-                  <rect x="35" y="10" width="10" height="10" />
-                  <rect x="50" y="10" width="10" height="10" />
-                  <rect x="35" y="35" width="30" height="30" />
-                  <rect x="45" y="45" width="10" height="10" fill="white" />
-                  <rect x="70" y="50" width="10" height="20" />
-                  <rect x="85" y="70" width="15" height="15" />
-                  <rect x="40" y="75" width="20" height="10" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-slate-700">finapartner.com</p>
-                <p className="text-[10px] text-slate-400">Verificación Digital Invoficlib</p>
-              </div>
-            </div>
-
-            {/* Texto de Control Fiscal */}
-            <div className="text-center sm:text-right">
-              <span className="font-bold tracking-widest uppercase text-slate-700 text-sm block">
-                DOCUMENTO NO FISCAL
-              </span>
-              <span className="text-[10px] text-slate-400">
-                Comprobante interno de entrega / movimiento de inventario
-              </span>
-            </div>
+          {/* Pie de Página: Documento No Fiscal */}
+          <div className="pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
+            <span className="font-bold tracking-widest uppercase text-slate-700 text-sm block">
+              DOCUMENTO NO FISCAL
+            </span>
+            <span className="text-[10px] text-slate-400">
+              Comprobante interno de entrega / movimiento de inventario
+            </span>
           </div>
 
         </div>
