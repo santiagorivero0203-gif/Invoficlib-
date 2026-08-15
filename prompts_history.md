@@ -263,14 +263,24 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 **Agente:** Antigravity (principal)  
 **Prompt Original:** "Ahora puedes leer tareas de notion ya que coecte el mcp es cierto? https://app.notion.com/p/Tareas-semanales-ef0053ab737283b0a86a01b7cbd73cb0?source=copy_link"
 
-## Prompt 31 (Ejecución de Suite de Tareas de Notion: Pedidos, Inventario y Micro-Animaciones)
+## Prompt 32 (Lector de Códigos QR Interno en Configuración y Acceso Restringido)
 **Fecha:** 2026-08-15  
 **Agente:** Antigravity (principal)  
-**Prompt Original:** "Revisa todas las tareas que estan en notion / Hazlo todo"
+**Prompt Original:** "Quisiera que quitaras eso de las notas / Y que utilice otro metodo para para imprimir ya que Imprime la pagina completa en vez de solo la nota / Creo que seria mejor dejarlo solo para escanear dentro de la app, desde la configuracion, y asi si solo los que tienen acceso a la app Pueden ver las notas actualizadas"
 
 ---
 
 ## Registro de Cambios (por prompt)
+
+### Prompt 32 — Lector QR en Configuración, Impresión Popup y Acceso Restringido (2026-08-15)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `components/scanner/qr-scanner.tsx` — Módulo completo de escaneo QR interno con 3 modalidades: Escaneo con cámara/webcam en vivo (`html5-qrcode`), carga de archivo de imagen y búsqueda manual por correlativo (#00004) o UUID.
+- `app/(dashboard)/configuracion/page.tsx` — Integración del Lector QR de notas con previsualización reactiva de la nota escaneada, consulta de stock/devoluciones y enlace directo a gestión en Pedidos.
+- `components/PrintableNota.tsx` — Eliminación de branding no perteneciente (`finapartner.com`), impresión mediante ventana emergente aislada (evita imprimir la interfaz web) e integración del QR de verificación interna (`QRCodeDisplay`).
+- `components/ui/qr-code.tsx` — Componente cliente para renderizado de QR codes nítidos con corrección de error 'M'.
+- `app/nota/[id]/page.tsx` & `app/nota/[id]/nota-view.tsx` — Ruta protegida de visualización de notas que bloquea el acceso a usuarios no autenticados y los orienta a usar el escáner interno.
+- `app/(dashboard)/pedidos/pedidos-client.tsx` — Soporte para auto-apertura de pedidos escaneados mediante query params (`?notaId=...` o `?correlativo=...`).
 
 ### Prompt 31 — Suite Completa de Tareas de Notion (2026-08-15)
 **Agente ejecutor:** Antigravity (principal)  
