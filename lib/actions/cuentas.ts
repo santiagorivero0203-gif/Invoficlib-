@@ -96,11 +96,12 @@ export async function getTasaVigente(): Promise<{
 
   const { data, error } = await supabase
     .from('tasas_cambio')
-    .select('tasa_ves')
+    .select('tasa')
+    .eq('moneda', 'USD')
     .order('fecha_creacion', { ascending: false })
     .limit(1)
     .single()
 
   if (error || !data) return { data: null, error }
-  return { data: data.tasa_ves, error: null }
+  return { data: (data as any).tasa, error: null }
 }

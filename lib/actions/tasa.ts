@@ -15,31 +15,33 @@ import type { Database } from '@/types/database.types'
 export type TasaCambio = Database['public']['Tables']['tasas_cambio']['Row']
 
 /**
- * Obtiene la tasa de cambio más reciente registrada.
+ * Obtiene la tasa de cambio más reciente registrada para una moneda específica.
  * Devuelve `null` si aún no hay ninguna tasa cargada.
  */
-export async function getTasaVigente() {
+export async function getTasaVigente(moneda: 'USD' | 'EUR' = 'USD') {
   const supabase = createClient()
 
   return supabase
     .from('tasas_cambio')
     .select('*')
+    .eq('moneda', moneda)
     .order('fecha_creacion', { ascending: false })
     .limit(1)
     .maybeSingle()
 }
 
 /**
- * Registra una nueva tasa de cambio para el día.
+ * Registra una nueva tasa de cambio.
  *
- * @param tasa_ves - Monto en Bs. equivalente a 1 USD.
+ * @param tasa - Monto en Bs. equivalente a 1 USD o 1 EUR.
+ * @param moneda - 'USD' o 'EUR'.
  */
-export async function registrarTasa(tasa_ves: number) {
+export async function registrarTasa(tasa: number, moneda: 'USD' | 'EUR' = 'USD') {
   const supabase = createClient()
 
   return supabase
     .from('tasas_cambio')
-    .insert({ tasa_ves })
+    .insert({ tasa, moneda })
     .select()
     .single()
 }

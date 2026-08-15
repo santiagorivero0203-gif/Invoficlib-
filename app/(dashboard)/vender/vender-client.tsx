@@ -42,17 +42,20 @@ interface ItemCarrito {
   cantidad: number
 }
 
+import { useTasas } from '@/components/providers/tasas-provider'
+
 interface VenderClientProps {
   /** Catálogo real de productos activos con su stock calculado. */
   productos: ProductoConStock[]
   /** Tasa USD/VES vigente; `null` si no hay ninguna registrada. */
-  tasaVes: number | null
+  tasaVes?: number | null
   /** Lista de clientes activos para autocompletado y directorio. */
   clientes: Cliente[]
 }
 
-export default function VenderClient({ productos, tasaVes, clientes: clientesIniciales }: VenderClientProps) {
-  const tasa = tasaVes ?? TASA_FALLBACK
+export default function VenderClient({ productos, clientes: clientesIniciales }: VenderClientProps) {
+  const { tasaUsd } = useTasas()
+  const tasa = tasaUsd
   const [busqueda, setBusqueda] = useState('')
   const [moneda, setMoneda] = useState<Moneda>('USD')
   const [carrito, setCarrito] = useState<ItemCarrito[]>([])

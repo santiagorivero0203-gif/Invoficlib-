@@ -2,15 +2,16 @@
 
 import { LogOut, User, DollarSign, Bell, Menu } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
+import { useTasas } from '@/components/providers/tasas-provider'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 interface TopbarProps {
-  tasaVes?: number
   onMenuToggle?: () => void
 }
 
-export default function Topbar({ tasaVes = 42.50, onMenuToggle }: TopbarProps) {
+export default function Topbar({ onMenuToggle }: TopbarProps) {
   const { user, logout } = useAuth()
+  const { tasaUsd, tasaEur } = useTasas()
 
   const handleLogout = async () => {
     await logout()
@@ -29,9 +30,16 @@ export default function Topbar({ tasaVes = 42.50, onMenuToggle }: TopbarProps) {
         </button>
 
         {/* Indicador de Tasa del Día - Apple Pill Style */}
-        <div className="flex items-center gap-2 rounded-full bg-muted/80 border border-border px-3.5 py-1.5 text-xs text-foreground font-semibold shadow-xs">
-          <DollarSign className="h-3.5 w-3.5 shrink-0 text-primary-accent" />
-          <span className="font-mono tracking-tight text-xs">Tasa BCV: 1$ = {tasaVes.toFixed(2)} VES</span>
+        <div className="flex items-center gap-3 rounded-full bg-muted/80 border border-border px-3.5 py-1.5 text-xs text-foreground font-semibold shadow-xs">
+          <div className="flex items-center gap-1.5">
+            <DollarSign className="h-3.5 w-3.5 text-primary-accent shrink-0" />
+            <span className="font-mono tracking-tight">USD: {tasaUsd.toFixed(2)} Bs.</span>
+          </div>
+          <span className="text-muted-foreground/30 font-normal">|</span>
+          <div className="flex items-center gap-1.5">
+            <span className="text-amber-500 font-bold shrink-0">€</span>
+            <span className="font-mono tracking-tight">EUR: {tasaEur.toFixed(2)} Bs.</span>
+          </div>
         </div>
       </div>
 

@@ -40,7 +40,7 @@ export default function CuentasPage() {
         setError(errorMessage(err))
       } else {
         setResumen(resumenResult.data)
-        setTasaVes(tasaResult.data?.tasa_ves ?? null)
+        setTasaVes(tasaResult.data?.tasa ?? null)
       }
       setCargando(false)
     })()

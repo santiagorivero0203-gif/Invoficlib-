@@ -34,7 +34,7 @@ export default async function VenderPage() {
   return (
     <VenderClient
       productos={productosResult.data ?? []}
-      tasaVes={tasaResult.data?.tasa_ves ?? null}
+      tasaVes={tasaResult.data?.tasa ?? null}
       clientes={clientesResult.data ?? []}
     />
   )
