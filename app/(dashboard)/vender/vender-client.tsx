@@ -20,7 +20,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Modal } from '@/components/ui/modal'
-import { ErrorMessage } from '@/components/ui/error-message'
+import { useTasas } from '@/components/providers/tasas-provider'
 import { crearNota } from '@/lib/actions/notas'
 import { crearCliente } from '@/lib/actions/clientes'
 import type { ProductoConStock } from '@/lib/actions/productos'
@@ -28,9 +28,6 @@ import type { Cliente } from '@/lib/actions/clientes'
 import type { TipoSalida, EstadoFlotante, TipoCliente } from '@/types/database.types'
 import { formatUsd, formatVes } from '@/lib/format'
 import { cn, errorMessage } from '@/lib/utils'
-
-/** Tasa temporal usada cuando aún no hay ninguna registrada en `tasas_cambio`. */
-const TASA_FALLBACK = 42.5
 
 type Moneda = 'USD' | 'VES'
 
@@ -41,8 +38,6 @@ interface ItemCarrito {
   precioUsd: number
   cantidad: number
 }
-
-import { useTasas } from '@/components/providers/tasas-provider'
 
 interface VenderClientProps {
   /** Catálogo real de productos activos con su stock calculado. */

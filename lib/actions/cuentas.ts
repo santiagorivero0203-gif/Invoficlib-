@@ -83,25 +83,3 @@ export async function getResumenFinanciero(): Promise<{
   }
 }
 
-/**
- * Obtiene la tasa de cambio más reciente (USD → VES).
- * La usa el módulo /vender y /cuentas para mostrar
- * equivalencias en bolívares.
- */
-export async function getTasaVigente(): Promise<{
-  data: number | null
-  error: unknown
-}> {
-  const supabase = createClient()
-
-  const { data, error } = await supabase
-    .from('tasas_cambio')
-    .select('tasa')
-    .eq('moneda', 'USD')
-    .order('fecha_creacion', { ascending: false })
-    .limit(1)
-    .single()
-
-  if (error || !data) return { data: null, error }
-  return { data: (data as { tasa: number }).tasa, error: null }
-}
