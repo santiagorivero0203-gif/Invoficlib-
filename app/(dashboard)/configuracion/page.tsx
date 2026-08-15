@@ -1,13 +1,29 @@
 'use client'
 
 import { useState } from 'react'
-import { DollarSign, User, Save, RefreshCw } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import {
+  DollarSign,
+  User,
+  Save,
+  RefreshCw,
+  QrCode,
+  Printer,
+  ExternalLink,
+} from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { useTasas } from '@/components/providers/tasas-provider'
 import { registrarTasa } from '@/lib/actions/tasa'
+import { getNotaCompleta, type NotaCompleta, type DetalleNota } from '@/lib/actions/notas'
+import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { cn } from '@/lib/utils'
+import { Modal } from '@/components/ui/modal'
+import { QRScanner } from '@/components/scanner/qr-scanner'
+import PrintableNota from '@/components/PrintableNota'
+import { formatUsd, formatDate } from '@/lib/format'
+import { cn, errorMessage } from '@/lib/utils'
 
 const inputClassName = cn(
   'w-full rounded-xl border border-border bg-muted/30 px-4 py-2.5 text-sm text-foreground',
@@ -17,6 +33,7 @@ const inputClassName = cn(
 )
 
 export default function ConfiguracionPage() {
+  const router = useRouter()
   const { user, updateProfile } = useAuth()
   const { tasaUsd, tasaEur, sincronizando, error: errorTasas, sincronizarAhora } = useTasas()
 
@@ -24,10 +41,17 @@ export default function ConfiguracionPage() {
   const [tasaEurManual, setTasaEurManual] = useState('')
   const [guardandoTasa, setGuardandoTasa] = useState(false)
   const [mensajeTasa, setMensajeTasa] = useState<string | null>(null)
-  
+
   const [nombre, setNombre] = useState(user?.nombre ?? '')
   const [email, setEmail] = useState(user?.email ?? '')
   const [perfilGuardado, setPerfilGuardado] = useState(false)
+
+  // Estados del Escáner QR de Notas
+  const [notaEscaneada, setNotaEscaneada] = useState<NotaCompleta | null>(null)
+  const [cargandoNota, setCargandoNota] = useState(false)
+  const [errorEscaneo, setErrorEscaneo] = useState<string | null>(null)
+  const [modalNotaAbierto, setModalNotaAbierto] = useState(false)
+  const [mostrarImpresion, setMostrarImpresion] = useState(false)
 
   const handleRegistrarTasaManual = async (moneda: 'USD' | 'EUR') => {
     const valorRaw = moneda === 'USD' ? tasaUsdManual : tasaEurManual
@@ -60,16 +84,127 @@ export default function ConfiguracionPage() {
     setTimeout(() => setPerfilGuardado(false), 2500)
   }
 
+  // Procesar código QR o correlativo escaneado
+  const handleScanNota = async (texto: string) => {
+    setCargandoNota(true)
+    setErrorEscaneo(null)
+    setNotaEscaneada(null)
+
+    try {
+      let targetId = texto.trim()
+
+      // 1. Si es una URL, extraer ID o parámetro
+      if (targetId.includes('/nota/')) {
+        const parts = targetId.split('/nota/')
+        targetId = parts[1]?.split('?')[0]?.split('/')[0] || targetId
+      } else if (targetId.includes('notaId=')) {
+        const match = targetId.match(/notaId=([^&]+)/)
+        if (match) targetId = match[1]
+      }
+
+      const supabase = createClient()
+      const isUuid = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(
+        targetId
+      )
+
+      let idFinal = targetId
+
+      // 2. Si no es UUID, buscar por correlativo
+      if (!isUuid) {
+        let correlativoBuscado = targetId
+        if (!correlativoBuscado.startsWith('#')) {
+          correlativoBuscado = `#${correlativoBuscado.padStart(5, '0')}`
+        }
+
+        const { data: notaByCorrelativo } = await supabase
+          .from('notas')
+          .select('id')
+          .ilike('correlativo', `%${targetId.replace('#', '')}%`)
+          .limit(1)
+          .maybeSingle()
+
+        if (notaByCorrelativo) {
+          idFinal = notaByCorrelativo.id
+        } else {
+          throw new Error(`No se encontró ninguna nota con el código o correlativo "${texto}".`)
+        }
+      }
+
+      // 3. Cargar nota completa y actualizada
+      const { data: nota, error } = await getNotaCompleta(idFinal)
+      if (error || !nota) {
+        throw new Error(`No se pudo obtener la nota (${error ? errorMessage(error) : 'No encontrada'}).`)
+      }
+
+      setNotaEscaneada(nota)
+      setModalNotaAbierto(true)
+    } catch (err) {
+      const error = err as Error
+      setErrorEscaneo(error.message || 'Error al buscar la nota escaneada.')
+    } finally {
+      setCargandoNota(false)
+    }
+  }
+
+  const cantidadDevueltaDe = (nota: NotaCompleta, detalle: DetalleNota): number => {
+    return (nota.devoluciones ?? []).reduce((acc, d) => {
+      if (d.detalle_nota_id === detalle.id) return acc + d.cantidad_devuelta
+      if (d.detalle_nota_id === null && d.producto_id === detalle.producto_id) {
+        return acc + d.cantidad_devuelta
+      }
+      return acc
+    }, 0)
+  }
+
   return (
     <div className="space-y-8 animate-fade-in max-w-5xl">
       <div>
         <h2 className="text-3xl font-bold tracking-tight text-foreground">Configuración</h2>
         <p className="text-sm text-muted-foreground mt-1">
-          Ajustes del sistema, tasas oficiales del BCV y perfil de usuario de Invoficlib
+          Ajustes del sistema, tasas oficiales del BCV, lector QR de notas y perfil de usuario.
         </p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 items-start">
+        {/* Card: Lector de Códigos QR de Notas */}
+        <Card className="md:col-span-2 border-primary-accent/20 bg-card">
+          <CardHeader>
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3.5">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-accent/10 text-primary-accent border border-primary-accent/20">
+                  <QrCode className="h-5 w-5" />
+                </div>
+                <div>
+                  <CardTitle>Lector de Códigos QR de Notas</CardTitle>
+                  <CardDescription>
+                    Escanea notas impresas con la cámara para verificar su estado en tiempo real y gestionarlas.
+                  </CardDescription>
+                </div>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <QRScanner onScanSuccess={handleScanNota} />
+
+            {cargandoNota && (
+              <div className="flex items-center justify-center gap-2 rounded-xl bg-muted/40 p-4 text-xs text-muted-foreground animate-pulse">
+                <RefreshCw className="h-4 w-4 animate-spin text-primary-accent" />
+                Buscando nota en el sistema...
+              </div>
+            )}
+
+            {errorEscaneo && (
+              <div className="rounded-xl border border-rose-500/20 bg-rose-500/10 p-3.5 text-xs text-rose-600 dark:text-rose-400 flex items-center justify-between gap-2">
+                <span>{errorEscaneo}</span>
+                <Button variant="ghost" size="sm" onClick={() => setErrorEscaneo(null)} className="h-7 text-xs">
+                  Cerrar
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Card: Tasas de Cambio */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3.5">
@@ -176,6 +311,7 @@ export default function ConfiguracionPage() {
           </CardContent>
         </Card>
 
+        {/* Card: Perfil de Usuario */}
         <Card>
           <CardHeader>
             <div className="flex items-center gap-3.5">
@@ -232,6 +368,135 @@ export default function ConfiguracionPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Modal / Detalle de la Nota Escaneada Actualizada */}
+      <Modal
+        open={modalNotaAbierto}
+        onClose={() => setModalNotaAbierto(false)}
+        title={notaEscaneada ? `Nota ${notaEscaneada.correlativo}` : 'Nota Escaneada'}
+      >
+        {notaEscaneada && (
+          <div className="space-y-4">
+            {/* Header con Estado */}
+            <div className="rounded-xl border border-border bg-muted/20 p-4">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Cliente</p>
+                  <p className="font-bold text-foreground text-base mt-0.5">{notaEscaneada.cliente_nombre}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Emitida el {formatDate(notaEscaneada.fecha_creacion)}
+                  </p>
+                </div>
+                <Badge
+                  variant={
+                    notaEscaneada.estado === 'pagada'
+                      ? 'pagada'
+                      : notaEscaneada.estado === 'anulada'
+                        ? 'anulada'
+                        : 'parcial'
+                  }
+                >
+                  {notaEscaneada.estado}
+                </Badge>
+              </div>
+
+              <div className="mt-3 flex items-center justify-between border-t border-border pt-2.5">
+                <span className="text-xs text-muted-foreground">Total de la Nota:</span>
+                <span className="font-mono text-base font-bold text-foreground">
+                  {formatUsd(notaEscaneada.total_usd)}
+                </span>
+              </div>
+            </div>
+
+            {/* Lista de Libros / Productos */}
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                Productos ({notaEscaneada.detalles_nota.length} líneas)
+              </p>
+              <div className="max-h-48 space-y-2 overflow-y-auto pr-1">
+                {notaEscaneada.detalles_nota.map((det) => {
+                  const dev = cantidadDevueltaDe(notaEscaneada, det)
+                  return (
+                    <div
+                      key={det.id}
+                      className="rounded-lg border border-border bg-card p-2.5 text-xs flex items-center justify-between gap-2"
+                    >
+                      <div className="min-w-0">
+                        <p className="font-medium text-foreground truncate">
+                          {det.productos?.nombre ?? 'Producto'}
+                        </p>
+                        <p className="font-mono text-[10px] text-muted-foreground">
+                          {det.cantidad} uds. × {formatUsd(det.precio_unitario_usd)}
+                          {dev > 0 && (
+                            <span className="ml-1 text-rose-500 font-semibold">(−{dev} devueltas)</span>
+                          )}
+                        </p>
+                      </div>
+                      <p className="font-mono font-bold text-foreground shrink-0">
+                        {formatUsd(det.subtotal_usd)}
+                      </p>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Acciones */}
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-border">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1 gap-1.5"
+                onClick={() => setMostrarImpresion(true)}
+              >
+                <Printer className="h-3.5 w-3.5" />
+                Imprimir
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                className="flex-1 gap-1.5"
+                onClick={() => {
+                  setModalNotaAbierto(false)
+                  router.push(`/pedidos?notaId=${notaEscaneada.id}`)
+                }}
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                Gestionar en Pedidos
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Vista de Impresión */}
+      {mostrarImpresion && notaEscaneada && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <PrintableNota
+            nota={{
+              id: notaEscaneada.id,
+              correlativo: notaEscaneada.correlativo,
+              fecha: formatDate(notaEscaneada.fecha_creacion),
+              observaciones: notaEscaneada.observaciones,
+              tipoSalida: notaEscaneada.tipo_salida,
+            }}
+            cliente={{
+              nombre: notaEscaneada.cliente_nombre,
+              rif: 'J-50410440-0',
+              direccion: 'Caracas, Venezuela',
+            }}
+            items={notaEscaneada.detalles_nota.map((det) => ({
+              cantidad: det.cantidad,
+              descripcion: det.productos?.nombre || 'Producto',
+              sku: det.productos?.codigo_sku || 'S/N',
+              precioUsd: det.precio_unitario_usd,
+              totalUsd: det.subtotal_usd,
+            }))}
+            onClose={() => setMostrarImpresion(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }
+

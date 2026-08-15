@@ -1,7 +1,8 @@
 'use client'
 
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import {
   Plus,
   RotateCcw,
@@ -103,6 +104,8 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
   // Impresión
   const [mostrarImpresion, setMostrarImpresion] = useState(false)
 
+  const searchParams = useSearchParams()
+
   const cargarNotas = useCallback(async () => {
     setCargando(true)
     setError(null)
@@ -115,7 +118,7 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
     setCargando(false)
   }, [])
 
-  const abrirDetalle = async (nota: NotaListada) => {
+  const abrirDetalle = useCallback(async (nota: { id: string }) => {
     setNotaSeleccionadaId(nota.id)
     setCargandoDetalle(true)
     setErrorDetalle(null)
@@ -128,7 +131,30 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
       setNotaCompleta(data)
     }
     setCargandoDetalle(false)
-  }
+  }, [])
+
+  // Auto-abrir nota si viene en los query params (ej. desde el escáner QR de Configuración)
+  useEffect(() => {
+    const paramId = searchParams.get('notaId')
+    const paramCorrelativo = searchParams.get('correlativo')
+
+    if (!paramId && !paramCorrelativo) return
+
+    const timer = setTimeout(() => {
+      if (paramId) {
+        abrirDetalle({ id: paramId })
+      } else if (paramCorrelativo) {
+        const match = notas.find(
+          (n) => n.correlativo.toLowerCase() === paramCorrelativo.toLowerCase()
+        )
+        if (match) {
+          abrirDetalle(match)
+        }
+      }
+    }, 50)
+
+    return () => clearTimeout(timer)
+  }, [searchParams, notas, abrirDetalle])
 
   const abrirDevolucion = (detalle: DetalleNota) => {
     setDetalleDevolucion(detalle)
@@ -678,6 +704,7 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
           <PrintableNota
             nota={{
+              id: notaCompleta.id,
               correlativo: notaCompleta.correlativo,
               fecha: formatDate(notaCompleta.fecha_creacion),
               observaciones:

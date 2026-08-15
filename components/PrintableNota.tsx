@@ -3,6 +3,7 @@
 import React from 'react'
 import { Printer, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { QRCodeDisplay } from '@/components/ui/qr-code'
 
 export interface PrintableNotaItem {
   cantidad: number
@@ -26,6 +27,7 @@ export interface PrintableNotaProps {
     telefono?: string | null
   }
   nota: {
+    id?: string
     correlativo: string
     fecha: string
     observaciones?: string | null
@@ -283,14 +285,33 @@ export default function PrintableNota({
             </div>
           </div>
 
-          {/* Pie de Página: Documento No Fiscal */}
-          <div className="pt-6 border-t border-slate-200 text-center text-xs text-slate-500">
-            <span className="font-bold tracking-widest uppercase text-slate-700 text-sm block">
-              DOCUMENTO NO FISCAL
-            </span>
-            <span className="text-[10px] text-slate-400">
-              Comprobante interno de entrega / movimiento de inventario
-            </span>
+          {/* Pie de Página: QR Code de Verificación Interna & Documento No Fiscal */}
+          <div className="pt-6 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+            {/* QR Code de Verificación Interna */}
+            <div className="flex items-center gap-3">
+              <div className="h-16 w-16 bg-white border border-slate-300 p-1 flex items-center justify-center rounded shrink-0">
+                <QRCodeDisplay
+                  value={nota.id || nota.correlativo}
+                  size={56}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <div className="text-left">
+                <p className="font-bold text-slate-800 text-[11px]">Verificación: {nota.correlativo}</p>
+                <p className="text-[10px] text-slate-500">Invoficlib · Sistema de Gestión</p>
+                <p className="text-[9px] text-slate-400">Escanear en Configuración &gt; Lector QR</p>
+              </div>
+            </div>
+
+            {/* Texto de Control Fiscal */}
+            <div className="text-center sm:text-right">
+              <span className="font-bold tracking-widest uppercase text-slate-700 text-sm block">
+                DOCUMENTO NO FISCAL
+              </span>
+              <span className="text-[10px] text-slate-400">
+                Comprobante interno de entrega / movimiento de inventario
+              </span>
+            </div>
           </div>
 
         </div>
