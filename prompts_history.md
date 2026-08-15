@@ -233,14 +233,90 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 **Agente:** Antigravity (principal)  
 **Prompt Original:** "Que archivos debe analizar opencode de manera primaria"
 
-## Prompt 23 (Guía de configuración en Supabase)
-**Fecha:** 2026-08-13  
+## Prompt 24 (Optimización de Inventario, filtros y acceso rápido en Sidebar)
+**Fecha:** 2026-08-14  
 **Agente:** Antigravity (principal)  
-**Prompt Original:** "y que debo hacer en supabase"
+**Prompt Original:** "Quisiera que en inventario se viera un poco mas grande la barra de busqueda, filtros de busqueda como en la imagen,esas dos barras de ali las veo necesarias igual,arregles el error de la segunda imagen, Quisiera que aparte de tener alli el acceso al historial de movimientos Que tambien sea accesible desde la barra lateral cuando se despliega inventario.Ademas quiero que quites el texto resaltado que esta en la tercera imagen ya que parece mucho ia slop"
+
+## Prompt 25 (Lógica de Promociones, Devoluciones libro por libro y alerta de stock)
+**Fecha:** 2026-08-14  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Tienes mal programada la logica de las promociones uno debe poder ingresar a la nota y las devoluciones normalmente son parte de los libros no todos uno debe poder entrar en a nota y elegir que libro de la nota y que cantidad se devuelve al inventario., Aparte de preguntar antes de emitir una nota por si no hay stock suficiente como un mensaje advirtiendo que no hay stock y si se desea proseguir. Y recordar que las promociones no te ingresan dinero debido a que son como un "regalo" hacia al profesor o mas como un pacto de que si le gusta se lo queda para que despues eso nos traiga beneficios mas adelante."
+
+## Prompt 26 (Reemplazo del sistema Fina: Prevención de bugs de conteo, View stock_actual y Nota Imprimible)
+**Fecha:** 2026-08-14  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Vamos a reemplazar el sistema de facturación heredado (Fina). El sistema viejo tenía un bug crítico y un diseño deficiente. Nuestro objetivo es garantizar que la nueva lógica matemática sea impecable y que el diseño de las "Notas" para imprimir sea profesional, moderno y coherente con la UI de la app. 1. Prevención del Bug de Cálculo de Unidades: usar estrictamente reduce sumando cantidades. 2. Refactorización del Módulo de Inventario (View stock_actual). 3. Componente PrintableNota moderno."
+
+## Prompt 27 (Sincronización Automática de Tasas BCV Bimoneda USD/EUR y Skeletons de Navegación)
+**Fecha:** 2026-08-14  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Comienza la migración SQL y la integración de este sistema de tasas... No seria mejor que se sincronizara sola la tasa?"
+
+## Prompt 28 (Tipografía Inter + JetBrains Mono y Mejora de Contraste)
+**Fecha:** 2026-08-14  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Quisiera que usaras una tipografia un poco mas legible debido a que se pierde un poco con el fondo los resaltados"
+
+## Prompt 29 (Conexión y Lectura de Tareas de Notion vía MCP)
+**Fecha:** 2026-08-15  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Ahora puedes leer tareas de notion ya que coecte el mcp es cierto? https://app.notion.com/p/Tareas-semanales-ef0053ab737283b0a86a01b7cbd73cb0?source=copy_link"
+
+## Prompt 30 (Auditoría del Código: Limpieza de duplicados, código muerto y conexión del Dashboard)
+**Fecha:** 2026-08-15  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Revisar antigravity: errores, código repetitivo y funciones innecesarias / si ,no danes nada"
 
 ---
 
 ## Registro de Cambios (por prompt)
+
+### Prompt 30 — Auditoría del Código y Conexión de Datos Vivos (2026-08-15)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `app/(dashboard)/vender/vender-client.tsx` — Eliminados `ErrorMessage` y `TASA_FALLBACK` no utilizados.
+- `lib/actions/cuentas.ts` — Eliminada la declaración redundante de `getTasaVigente()`.
+- `lib/mock/operaciones.ts` — Eliminado archivo obsoleto con datos estáticos de prueba.
+- `app/(dashboard)/page.tsx` — Conectado el Dashboard a datos vivos del Ledger de Supabase (`getProductosConStock` y `getMovimientos`), calculando métricas, alertas de stock mínimo y tabla de últimos movimientos en tiempo real.
+- `prompts_history.md` — Actualización integral del historial de prompts.
+
+### Prompt 29 — Integración con Notion MCP (2026-08-15)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- Consulta e integración mediante el servidor `notion-mcp-server` de la lista de tareas semanales compartida por el usuario.
+
+### Prompt 28 — Tipografía de Alto Rendimiento y Contraste Visual (2026-08-14)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `app/layout.tsx` — Migración a fuentes de Google `Inter` para texto general y `JetBrains Mono` para valores numéricos y tablas.
+- `app/globals.css` — Ajustes de contraste reforzado (`#111111` / `#515154` en light, `#f1f5f9` / `#a8b8cc` en dark), `text-rendering: optimizeLegibility`, `font-feature-settings` OpenType y kerning optimizado.
+
+### Prompt 27 — Sincronización Automática de Tasas BCV Bimoneda USD/EUR (2026-08-14)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `supabase/migration_tasas_bcv.sql` — Migración SQL para tabla `tasas_cambio` con soporte de bimoneda (`moneda` USD/EUR), constraints y políticas RLS.
+- `app/api/cron/sync-tasas/route.ts` — Endpoint de sincronización automática contra la API oficial del BCV (`ve.dolarapi.com`).
+- `components/providers/tasas-provider.tsx` — Proveedor global reactivo con auto-sync en segundo plano y suscripción a Supabase Realtime.
+- `app/(dashboard)/loading.tsx` — Pantalla de transición inmediata tipo Skeleton para eliminar sensación de lentitud al cambiar de ruta.
+
+### Prompt 26 — Reemplazo del Sistema Fina y Nota Imprimible (2026-08-14)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `components/PrintableNota.tsx` — Componente moderno de notas fiscales/comprobantes para impresión con cálculo estricto de unidades físicas mediante `reduce`.
+- `lib/actions/productos.ts` — Soporte para consulta directa de la vista `stock_actual`.
+
+### Prompt 25 — Gestión Avanzada de Promociones y Devoluciones (2026-08-14)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `app/(dashboard)/promociones/page.tsx` — Interfaz de promociones con devolución libro por libro hacia inventario y lógica de muestras obsequiadas de cortesía.
+- `app/(dashboard)/vender/vender-client.tsx` — Modal de advertencia antes de emitir notas si el producto no cuenta con stock suficiente.
+
+### Prompt 24 — Barra de Búsqueda y Navegación Mejorada de Inventario (2026-08-14)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `app/(dashboard)/inventario/inventario-client.tsx` — Barra de búsqueda ampliada, filtros por estado y stock, y eliminación de textos superfluos.
+- `components/dashboard/sidebar.tsx` — Acceso directo al Historial de Movimientos desplegable desde el submenú de Inventario.
 
 ### Prompt 23 — Instrucciones de despliegue en Supabase SQL (2026-08-13)
 **Agente ejecutor:** Antigravity (principal)  
