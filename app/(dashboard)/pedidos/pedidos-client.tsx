@@ -2,13 +2,14 @@
 
 import { useCallback, useState } from 'react'
 import Link from 'next/link'
-import { Plus, RotateCcw } from 'lucide-react'
+import { Plus, RotateCcw, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent } from '@/components/ui/card'
 import { Drawer } from '@/components/ui/drawer'
 import { Modal } from '@/components/ui/modal'
 import { ErrorMessage } from '@/components/ui/error-message'
+import PrintableNota from '@/components/PrintableNota'
 import {
   getNotas,
   getNotaCompleta,
@@ -63,6 +64,7 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
   const [motivo, setMotivo] = useState('Devolución de producto')
   const [devolviendo, setDevolviendo] = useState(false)
   const [devolucionOk, setDevolucionOk] = useState(false)
+  const [mostrarImpresion, setMostrarImpresion] = useState(false)
   const [errorDevolucion, setErrorDevolucion] = useState<string | null>(null)
 
   const cargarNotas = useCallback(async () => {
@@ -259,9 +261,22 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
           notaCompleta && (
             <div className="space-y-4">
               <div className="rounded-xl border border-border/60 bg-muted/30 p-4">
-                <p className="text-sm text-muted-foreground">Cliente</p>
-                <p className="font-medium text-foreground">{notaCompleta.cliente_nombre}</p>
-                <div className="mt-2 flex items-center gap-2">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="text-xs text-muted-foreground">Cliente</p>
+                    <p className="font-semibold text-foreground">{notaCompleta.cliente_nombre}</p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-8 gap-1.5 text-xs"
+                    onClick={() => setMostrarImpresion(true)}
+                  >
+                    <Printer className="h-3.5 w-3.5" />
+                    Imprimir Nota
+                  </Button>
+                </div>
+                <div className="mt-3 flex items-center justify-between border-t border-border/40 pt-2">
                   <Badge variant={estadoBadgeMap[notaCompleta.estado]}>
                     {notaCompleta.estado}
                   </Badge>
@@ -405,6 +420,32 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
           </div>
         )}
       </Modal>
+      {/* Vista de Impresión de la Nota */}
+      {mostrarImpresion && notaCompleta && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs">
+          <PrintableNota
+            nota={{
+              correlativo: notaCompleta.correlativo,
+              fecha: formatDate(notaCompleta.fecha_creacion),
+              observaciones: notaCompleta.estado_flotante === 'abierta' ? 'Nota en consignación / entrega pendiente' : 'Venta cancelada en su totalidad',
+              tipoSalida: notaCompleta.tipo_salida,
+            }}
+            cliente={{
+              nombre: notaCompleta.cliente_nombre,
+              rif: 'J-50410440-0',
+              direccion: 'Caracas, Venezuela',
+            }}
+            items={notaCompleta.detalles_nota.map((det) => ({
+              cantidad: det.cantidad,
+              descripcion: det.productos?.nombre || 'Producto',
+              sku: det.productos?.codigo_sku || 'S/N',
+              precioUsd: det.precio_unitario_usd,
+              totalUsd: det.subtotal_usd,
+            }))}
+            onClose={() => setMostrarImpresion(false)}
+          />
+        </div>
+      )}
     </div>
   )
 }

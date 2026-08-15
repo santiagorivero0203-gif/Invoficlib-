@@ -20,8 +20,11 @@ export type Producto = Database['public']['Tables']['productos']['Row']
 export type ProductoInsert = Database['public']['Tables']['productos']['Insert']
 export type ProductoUpdate = Database['public']['Tables']['productos']['Update']
 
-/** Producto con su stock calculado en tiempo real. */
-export type ProductoConStock = Producto & { stock: number }
+/** Producto con su stock y valor total calculado en tiempo real. */
+export type ProductoConStock = Producto & {
+  stock: number
+  valor_total_usd?: number
+}
 
 // ── PRODUCTOS ────────────────────────────────────────────
 
@@ -40,11 +43,8 @@ export async function getProductos() {
 }
 
 /**
- * Retorna los productos activos junto con su stock actual,
- * calculado sumando y restando los movimientos de inventario.
- *
- * ⚠️ Este cálculo puede ser costoso con muchos movimientos.
- *    Considerar una view o función RPC en Supabase para escalar.
+ * Retorna los productos activos junto con su stock actual y valorización,
+ * consultando la vista `stock_actual` (o calculando vía ledger en fallback).
  */
 export async function getProductosConStock(): Promise<{
   data: ProductoConStock[] | null
@@ -52,7 +52,36 @@ export async function getProductosConStock(): Promise<{
 }> {
   const supabase = createClient()
 
-  // 1. Obtener productos activos
+  // 1. Intentar consultar directamente la vista `stock_actual` en Supabase
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: viewData, error: viewError } = await (supabase as any)
+    .from('stock_actual')
+    .select('*')
+    .order('nombre')
+
+  if (!viewError && viewData) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const productos: ProductoConStock[] = (viewData as any[]).map((p) => {
+      const stock = Math.max(0, Number(p.stock) || 0)
+      const precio = Number(p.precio_usd) || 0
+      return {
+        id: p.id || p.producto_id,
+        codigo_sku: p.codigo_sku,
+        nombre: p.nombre,
+        descripcion: p.descripcion,
+        precio_usd: precio,
+        stock_minimo: p.stock_minimo,
+        estado: p.estado,
+        imagen_url: p.imagen_url,
+        fecha_creacion: p.fecha_creacion,
+        stock,
+        valor_total_usd: Number(p.valor_total_usd) || (stock * precio),
+      }
+    })
+    return { data: productos, error: null }
+  }
+
+  // 2. Fallback de agregación directa sobre el ledger de movimientos
   const { data: productos, error: errProductos } = await supabase
     .from('productos')
     .select('*')
@@ -63,7 +92,6 @@ export async function getProductosConStock(): Promise<{
     return { data: null, error: errProductos }
   }
 
-  // 2. Obtener todos los movimientos para calcular stock
   const { data: movimientos, error: errMov } = await supabase
     .from('movimientos_inventario')
     .select('producto_id, tipo, cantidad')
@@ -72,18 +100,19 @@ export async function getProductosConStock(): Promise<{
     return { data: null, error: errMov }
   }
 
-  // 3. Calcular stock por producto (entradas − salidas, mínimo 0)
   const stockMap: Record<string, number> = {}
   for (const m of movimientos) {
     stockMap[m.producto_id] = (stockMap[m.producto_id] ?? 0) + (m.tipo === 'entrada' ? m.cantidad : -m.cantidad)
   }
 
-  const productosConStock: ProductoConStock[] = productos.map((p) => ({
-    ...p,
-    // Math.max(0, ...) previene que se muestre stock negativo en la UI
-    // (puede ocurrir si hay salidas sin entrada previa en el ledger)
-    stock: Math.max(0, stockMap[p.id] ?? 0),
-  }))
+  const productosConStock: ProductoConStock[] = productos.map((p) => {
+    const stock = Math.max(0, stockMap[p.id] ?? 0)
+    return {
+      ...p,
+      stock,
+      valor_total_usd: stock * p.precio_usd,
+    }
+  })
 
   return { data: productosConStock, error: null }
 }

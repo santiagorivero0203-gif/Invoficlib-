@@ -420,6 +420,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
                           <th className="px-4 py-3 font-medium text-muted-foreground">Precio USD</th>
                         )}
                         <th className="px-4 py-3 font-medium text-muted-foreground">Stock Disponible</th>
+                        <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Valor en Stock</th>
                         {mostrarUbicacion && (
                           <th className="px-4 py-3 font-medium text-muted-foreground">Ubicación</th>
                         )}
@@ -430,6 +431,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
                     <tbody>
                       {productosFiltrados.map((p) => {
                         const bajo = p.stock <= p.stock_minimo
+                        const valorTotal = p.valor_total_usd ?? (p.stock * p.precio_usd)
                         return (
                           <tr
                             key={p.id}
@@ -460,6 +462,9 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
                                   </Badge>
                                 )}
                               </div>
+                            </td>
+                            <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground md:table-cell">
+                              {formatUsd(valorTotal)}
                             </td>
                             {mostrarUbicacion && (
                               <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
