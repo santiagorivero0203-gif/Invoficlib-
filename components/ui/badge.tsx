@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 
 /** Variantes semánticas para estados de inventario, notas y gastos. */
 export type BadgeVariant =
+  | 'default'
   | 'entrada'
   | 'salida'
   | 'bajo'
@@ -12,12 +13,17 @@ export type BadgeVariant =
   | 'anulada'
   | 'pagado'
   | 'por_pagar'
+  | 'warning'
+  | 'info'
+  | 'outline'
+  | 'disponible'
 
 export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
   variant?: BadgeVariant
 }
 
 const variantStyles: Record<BadgeVariant, string> = {
+  default: 'bg-muted/80 text-foreground border-border',
   entrada: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
   salida: 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20',
   bajo: 'bg-amber-500/10 text-amber-700 dark:text-amber-500 border-amber-500/20',
@@ -27,6 +33,10 @@ const variantStyles: Record<BadgeVariant, string> = {
   anulada: 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20',
   pagado: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20',
   por_pagar: 'bg-orange-500/10 text-orange-700 dark:text-orange-400 border-orange-500/20',
+  warning: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20',
+  info: 'bg-sky-500/10 text-sky-700 dark:text-sky-400 border-sky-500/20',
+  outline: 'bg-transparent text-foreground border-border',
+  disponible: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',
 }
 /**
  * Insignia redonda para indicar estados de movimientos o niveles de stock.

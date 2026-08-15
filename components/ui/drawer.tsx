@@ -10,10 +10,18 @@ interface DrawerProps {
   title: string
   children: ReactNode
   className?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+}
+
+const sizeClasses: Record<'sm' | 'md' | 'lg' | 'xl', string> = {
+  sm: 'max-w-sm',
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-2xl',
 }
 
 /** Panel lateral deslizable para detalle de notas y formularios. */
-export function Drawer({ open, onClose, title, children, className }: DrawerProps) {
+export function Drawer({ open, onClose, title, children, className, size = 'md' }: DrawerProps) {
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden'
     else document.body.style.overflow = ''
@@ -31,7 +39,8 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
       />
       <div
         className={cn(
-          'relative z-50 flex h-full w-full max-w-md flex-col border-l border-border bg-card shadow-2xl animate-slide-in',
+          'relative z-50 flex h-full w-full flex-col border-l border-border bg-card shadow-2xl animate-slide-in',
+          sizeClasses[size],
           className
         )}
         role="dialog"

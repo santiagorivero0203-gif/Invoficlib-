@@ -90,10 +90,24 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
     setCargando(false)
   }, [])
 
+  const [mensajeExitoModal, setMensajeExitoModal] = useState<string | null>(null)
+
+  const generarSiguienteSku = useCallback(() => {
+    const numerosExistentes = productos
+      .map((p) => {
+        const match = p.codigo_sku.match(/\d+/)
+        return match ? parseInt(match[0], 10) : 0
+      })
+      .filter((n) => !isNaN(n))
+    
+    const maxNum = numerosExistentes.length > 0 ? Math.max(...numerosExistentes) : 100
+    return `LIB-${String(maxNum + 1).padStart(3, '0')}`
+  }, [productos])
+
   const abrirCrearProducto = () => {
     setEditandoId(null)
     setFormProducto({
-      codigo_sku: `LIB-${Math.floor(100 + Math.random() * 900)}`,
+      codigo_sku: generarSiguienteSku(),
       nombre: '',
       descripcion: '',
       precio_usd: '',
@@ -101,6 +115,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
       stock_inicial: '',
     })
     setErrorModalProducto(null)
+    setMensajeExitoModal(null)
     setModalProductoAbierto(true)
   }
 
@@ -115,10 +130,11 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
       stock_inicial: '',
     })
     setErrorModalProducto(null)
+    setMensajeExitoModal(null)
     setModalProductoAbierto(true)
   }
 
-  const handleGuardarProducto = async () => {
+  const handleGuardarProducto = async (crearOtro = false) => {
     if (!formProducto.nombre.trim() || !formProducto.codigo_sku.trim()) {
       setErrorModalProducto('El nombre y el código SKU son obligatorios.')
       return
@@ -138,6 +154,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
 
     setGuardandoProducto(true)
     setErrorModalProducto(null)
+    setMensajeExitoModal(null)
 
     if (editandoId) {
       const { error } = await actualizarProducto(editandoId, {
@@ -152,6 +169,8 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
         setErrorModalProducto(errorMessage(error))
         return
       }
+      setModalProductoAbierto(false)
+      cargarProductos()
     } else {
       const { data: nuevo, error } = await crearProducto({
         codigo_sku: formProducto.codigo_sku.trim(),
@@ -179,10 +198,28 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
         })
       }
       setGuardandoProducto(false)
-    }
 
-    setModalProductoAbierto(false)
-    cargarProductos()
+      await cargarProductos()
+
+      if (crearOtro) {
+        // Preparar inmediatamente para el siguiente producto sin cerrar el modal
+        const match = formProducto.codigo_sku.match(/\d+/)
+        const currentNum = match ? parseInt(match[0], 10) : 100
+        const nextSku = `LIB-${String(currentNum + 1).padStart(3, '0')}`
+
+        setMensajeExitoModal(`"${formProducto.nombre}" guardado con éxito.`)
+        setFormProducto({
+          codigo_sku: nextSku,
+          nombre: '',
+          descripcion: '',
+          precio_usd: '',
+          stock_minimo: '5',
+          stock_inicial: '',
+        })
+      } else {
+        setModalProductoAbierto(false)
+      }
+    }
   }
 
   const abrirCargarStock = (p?: ProductoConStock) => {
@@ -601,17 +638,39 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
             )}
           </div>
 
+          {mensajeExitoModal && (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 animate-pop-in">
+              <span>✓</span>
+              <span>{mensajeExitoModal} Listo para registrar el siguiente.</span>
+            </div>
+          )}
+
           {errorModalProducto && (
             <div className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700 dark:border-rose-900/40 dark:bg-rose-950/20 dark:text-rose-400">
               {errorModalProducto}
             </div>
           )}
 
-          <div className="flex items-center justify-end gap-2 pt-2">
-            <Button variant="ghost" onClick={() => setModalProductoAbierto(false)} disabled={guardandoProducto}>
-              Cancelar
+          <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
+            <Button variant="ghost" size="sm" onClick={() => setModalProductoAbierto(false)} disabled={guardandoProducto}>
+              Cerrar
             </Button>
-            <Button variant="primary" onClick={handleGuardarProducto} disabled={guardandoProducto}>
+            {!editandoId && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => handleGuardarProducto(true)}
+                disabled={guardandoProducto}
+              >
+                {guardandoProducto ? 'Guardando...' : 'Guardar y registrar otro'}
+              </Button>
+            )}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={() => handleGuardarProducto(false)}
+              disabled={guardandoProducto}
+            >
               {guardandoProducto ? 'Guardando...' : editandoId ? 'Guardar Cambios' : 'Registrar Libro'}
             </Button>
           </div>

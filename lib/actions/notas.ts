@@ -66,7 +66,7 @@ export interface ItemCorte {
 export async function getNotas(
   filtroTipoSalida?: TipoSalida,
   soloAbiertas?: boolean
-) {
+): Promise<{ data: (Nota & { devoluciones: Devolucion[] })[] | null; error: unknown }> {
   const supabase = createClient()
 
   let query = supabase
@@ -82,22 +82,34 @@ export async function getNotas(
     query = query.eq('estado_flotante', 'abierta')
   }
 
-  return query
+  const { data, error } = await query
+  return {
+    data: data as (Nota & { devoluciones: Devolucion[] })[] | null,
+    error,
+  }
 }
 
 /**
  * Lista solo las notas flotantes (promociones y consignaciones abiertas).
  * Usa la vista `notas_flotantes_abiertas` para un query optimizado.
  */
-export async function getNotasFlotantes() {
+export async function getNotasFlotantes(): Promise<{
+  data: (Nota & { devoluciones: Devolucion[] })[] | null
+  error: unknown
+}> {
   const supabase = createClient()
 
-  return supabase
+  const { data, error } = await supabase
     .from('notas')
     .select('*, devoluciones(*)')
     .in('tipo_salida', ['promocion', 'consignacion'])
     .eq('estado_flotante', 'abierta')
     .order('fecha_creacion', { ascending: false })
+
+  return {
+    data: data as (Nota & { devoluciones: Devolucion[] })[] | null,
+    error,
+  }
 }
 
 /**
@@ -106,10 +118,13 @@ export async function getNotasFlotantes() {
  *
  * @param notaId - UUID de la nota.
  */
-export async function getNotaCompleta(notaId: string) {
+export async function getNotaCompleta(notaId: string): Promise<{
+  data: NotaCompleta | null
+  error: unknown
+}> {
   const supabase = createClient()
 
-  return supabase
+  const { data, error } = await supabase
     .from('notas')
     .select(`
       *,
@@ -121,6 +136,11 @@ export async function getNotaCompleta(notaId: string) {
     `)
     .eq('id', notaId)
     .single()
+
+  return {
+    data: data as unknown as NotaCompleta | null,
+    error,
+  }
 }
 
 /**
@@ -258,7 +278,90 @@ export async function procesarCorteConsignacion(
 }
 
 /**
- * Elimina (anula) una nota. Solo permitido para admin por RLS.
+ * Anula una nota por completo y revierte todo el stock asociado al Ledger.
+ * Solo debe ser invocado por usuarios con rol Administrador (Jefe).
+ *
+ * Para cada ítem no devuelto de la nota, registra una devolución
+ * que dispara `trg_procesar_devolucion_dinamica`, reingresando los libros
+ * al `movimientos_inventario` como entradas y dejando la nota con total_usd = 0 y estado = 'anulada'.
+ *
+ * @param notaId    - UUID de la nota a anular.
+ * @param motivo    - Razón de la anulación (opcional).
+ * @param usuarioId - UUID del usuario que ejecuta la anulación.
+ */
+export async function anularNotaCompleta(
+  notaId: string,
+  motivo?: string,
+  usuarioId?: string
+): Promise<{ data: boolean | null; error: unknown }> {
+  const supabase = createClient()
+
+  // 1. Obtener la nota con sus líneas y devoluciones previas
+  const { data: nota, error: errorNota } = await getNotaCompleta(notaId)
+  if (errorNota || !nota) {
+    return { data: null, error: errorNota ?? new Error('Nota no encontrada') }
+  }
+
+  if (nota.estado === 'anulada') {
+    return { data: true, error: null }
+  }
+
+  const razonAnulacion = motivo?.trim() || `Anulación total de la nota ${nota.correlativo}`
+
+  // 2. Revertir cada detalle pendiente
+  for (const detalle of nota.detalles_nota) {
+    const devueltos = (nota.devoluciones ?? []).reduce((acc: number, d: Devolucion) => {
+      if (d.detalle_nota_id === detalle.id) return acc + d.cantidad_devuelta
+      if (d.detalle_nota_id === null && d.producto_id === detalle.producto_id) {
+        return acc + d.cantidad_devuelta
+      }
+      return acc
+    }, 0)
+
+    const pendiente = detalle.cantidad - devueltos
+
+    if (pendiente > 0) {
+      const { error: errDev } = await supabase.from('devoluciones').insert({
+        nota_id: nota.id,
+        producto_id: detalle.producto_id,
+        detalle_nota_id: detalle.id,
+        cantidad_devuelta: pendiente,
+        monto_descontado: pendiente * detalle.precio_unitario_usd,
+        motivo: razonAnulacion,
+        usuario_id: usuarioId ?? null,
+        fecha: new Date().toISOString(),
+      })
+
+      if (errDev) {
+        return { data: null, error: errDev }
+      }
+    }
+  }
+
+  // 3. Asegurar estado final anulado y saldo en 0
+  const { error: errorUpdate } = await supabase
+    .from('notas')
+    .update({
+      estado: 'anulada',
+      total_usd: 0,
+      estado_flotante: 'cerrada',
+      observaciones: nota.observaciones
+        ? `${nota.observaciones} | [ANULADA: ${razonAnulacion}]`
+        : `[ANULADA: ${razonAnulacion}]`,
+      fecha_actualizacion: new Date().toISOString(),
+    })
+    .eq('id', notaId)
+
+  if (errorUpdate) {
+    return { data: null, error: errorUpdate }
+  }
+
+  return { data: true, error: null }
+}
+
+/**
+ * Elimina físicamente una nota de la base de datos (hard delete).
+ * Se recomienda usar `anularNotaCompleta` para preservar auditoría contable.
  *
  * @param notaId - UUID de la nota a eliminar.
  */
@@ -270,3 +373,4 @@ export async function eliminarNota(notaId: string) {
     .delete()
     .eq('id', notaId)
 }
+

@@ -76,17 +76,20 @@ export interface Database {
       tasas_cambio: {
         Row: {
           id: number
-          tasa_ves: number
+          tasa: number
+          moneda: string
           fecha_creacion: string
         }
         Insert: {
           id?: number
-          tasa_ves: number
+          tasa: number
+          moneda?: string
           fecha_creacion?: string
         }
         Update: {
           id?: number
-          tasa_ves?: number
+          tasa?: number
+          moneda?: string
           fecha_creacion?: string
         }
         Relationships: []
@@ -158,7 +161,22 @@ export interface Database {
           nota_id?: string | null
           fecha_creacion?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "movimientos_inventario_producto_id_fkey"
+            columns: ["producto_id"]
+            isOneToOne: false
+            referencedRelation: "productos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimientos_inventario_nota_id_fkey"
+            columns: ["nota_id"]
+            isOneToOne: false
+            referencedRelation: "notas"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       clientes: {
         Row: {
@@ -263,7 +281,22 @@ export interface Database {
           subtotal_usd?: number
           fecha_creacion?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "detalles_nota_nota_id_fkey"
+            columns: ["nota_id"]
+            isOneToOne: false
+            referencedRelation: "notas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "detalles_nota_producto_id_fkey"
+            columns: ["producto_id"]
+            isOneToOne: false
+            referencedRelation: "productos"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       devoluciones: {
         Row: {
@@ -299,7 +332,22 @@ export interface Database {
           usuario_id?: string | null
           fecha?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "devoluciones_nota_id_fkey"
+            columns: ["nota_id"]
+            isOneToOne: false
+            referencedRelation: "notas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "devoluciones_producto_id_fkey"
+            columns: ["producto_id"]
+            isOneToOne: false
+            referencedRelation: "productos"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       gastos: {
         Row: {
