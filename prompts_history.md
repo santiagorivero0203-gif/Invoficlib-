@@ -263,6 +263,11 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 **Agente:** Antigravity (principal)  
 **Prompt Original:** "Ahora puedes leer tareas de notion ya que coecte el mcp es cierto? https://app.notion.com/p/Tareas-semanales-ef0053ab737283b0a86a01b7cbd73cb0?source=copy_link"
 
+## Prompt 34 (Módulos de Resumen Financiero: Utilidad / Pérdida y Reportes Detallados)
+**Fecha:** 2026-08-15  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Quisiera que añadieras estos dos apartados en la app, y aparte saber por que no se a actualizado nada en vercel si se supone que estas subiendo los cambios a github"
+
 ## Prompt 33 (Transiciones Fluidas entre Páginas y Verificación Integral de Notion)
 **Fecha:** 2026-08-15  
 **Agente:** Antigravity (principal)  
@@ -276,6 +281,15 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 ---
 
 ## Registro de Cambios (por prompt)
+
+### Prompt 34 — Resumen Financiero (Utilidad/Pérdida y Reportes) y Push a Vercel (2026-08-15)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `lib/actions/resumen-financiero.ts` — Capa de datos para cálculo de series de ingresos, costos de pedidos, utilidad bruta, gastos, utilidad neta, balance de capital (inventario, bancos, cuentas por cobrar/pagar) y filtros para reportes.
+- `app/(dashboard)/resumen-financiero/utilidad-perdida/` — Módulo de Utilidad/Pérdida con tarjetas KPI Bento, gráfico mensual interactivo de barras SVG con tooltips, tarjeta Hero de Total de Capital y gráfico de dona de Valor de Activos.
+- `app/(dashboard)/resumen-financiero/reportes/` — Módulo de Reportes con selector de rango de fecha y hora, filtro de usuarios, tabs (Pedidos, Cuentas, Métodos de pago, Inventario), 6 KPIs de resumen, tabla detallada paginada y exportación a CSV/Excel.
+- `components/dashboard/sidebar.tsx` — Adición del menú colapsable *Resumen Financiero* con acceso a ambos módulos.
+- Push exitoso a `origin master` en GitHub para disparar el despliegue automático en Vercel.
 
 ### Prompt 33 — Transición Cinematográfica entre Páginas y Verificación Notion (2026-08-15)
 **Agente ejecutor:** Antigravity (principal)  
