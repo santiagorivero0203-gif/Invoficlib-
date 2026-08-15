@@ -263,14 +263,26 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 **Agente:** Antigravity (principal)  
 **Prompt Original:** "Ahora puedes leer tareas de notion ya que coecte el mcp es cierto? https://app.notion.com/p/Tareas-semanales-ef0053ab737283b0a86a01b7cbd73cb0?source=copy_link"
 
-## Prompt 30 (Auditoría del Código: Limpieza de duplicados, código muerto y conexión del Dashboard)
+## Prompt 31 (Ejecución de Suite de Tareas de Notion: Pedidos, Inventario y Micro-Animaciones)
 **Fecha:** 2026-08-15  
 **Agente:** Antigravity (principal)  
-**Prompt Original:** "Revisar antigravity: errores, código repetitivo y funciones innecesarias / si ,no danes nada"
+**Prompt Original:** "Revisa todas las tareas que estan en notion / Hazlo todo"
 
 ---
 
 ## Registro de Cambios (por prompt)
+
+### Prompt 31 — Suite Completa de Tareas de Notion (2026-08-15)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `app/(dashboard)/pedidos/pedidos-client.tsx` — Visualización de hora exacta y fecha en cada pedido, buscador universal en tiempo real, filtro de fecha con mini-calendario integrado (Hoy, Esta Semana, Selector de Fecha) y modal de anulación con reversión de inventario para Administradores.
+- `lib/actions/notas.ts` — Implementada `anularNotaCompleta` con auditoría contable y reversión estricta de stock al Ledger (`movimientos_inventario`).
+- `app/(dashboard)/inventario/inventario-client.tsx` — Flujo ágil para creación de múltiples productos con el botón *"Guardar y registrar otro"*, auto-incremento inteligente del SKU sugerido (`LIB-001`, `LIB-002`...) y notificaciones pop-in de éxito.
+- `components/ui/button.tsx` — Jerarquía visual estricta ampliada (`primary`, `secondary`, `outline`, `ghost`, `danger`) con tamaños responsivos y micro-interacciones `active:scale-[0.98]`.
+- `components/ui/badge.tsx` — Nuevas variantes semánticas (`default`, `warning`, `info`, `outline`, `disponible`).
+- `components/ui/drawer.tsx` — Soporte para diferentes tamaños (`sm`, `md`, `lg`, `xl`).
+- `app/globals.css` — Micro-animaciones añadidas (`.animate-pop-in`, `.animate-pulse-subtle`, `.card-interactive` con elevación Apple).
+- `types/database.types.ts` — Sincronización de esquema (`tasa`, `moneda` y relaciones relacionales de Supabase).
 
 ### Prompt 30 — Auditoría del Código y Conexión de Datos Vivos (2026-08-15)
 **Agente ejecutor:** Antigravity (principal)  
