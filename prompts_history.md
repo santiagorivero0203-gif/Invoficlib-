@@ -263,6 +263,11 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 **Agente:** Antigravity (principal)  
 **Prompt Original:** "Ahora puedes leer tareas de notion ya que coecte el mcp es cierto? https://app.notion.com/p/Tareas-semanales-ef0053ab737283b0a86a01b7cbd73cb0?source=copy_link"
 
+## Prompt 36 (Entrega 2: CapacitorJS Live Updates, PDF Plano y Bot de Telegram con Gemini IA)
+**Fecha:** 2026-08-17  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Procede con la otra fase" (Entrega 2: Configuración de CapacitorJS, Live Updates y estructura de la Edge Function / Webhook del Bot de Telegram + Gemini IA)
+
 ## Prompt 35 (Entrega 1: Sesión Persistente Supabase, SQL Índices, Estrategia Backup y Reglas de Borrado)
 **Fecha:** 2026-08-17  
 **Agente:** Antigravity (principal)  
@@ -286,6 +291,16 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 ---
 
 ## Registro de Cambios (por prompt)
+
+### Prompt 36 — Entrega 2: CapacitorJS Live Updates, PDF Plano y Bot de Telegram + Gemini IA (2026-08-17)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `capacitor.config.ts` — Configuración de CapacitorJS con `server.url` apuntando a Vercel para Live Updates continuos sin reinstalar APK.
+- `docs/capacitor_live_updates_guide.md` — Guía de compilación del APK con Android Studio y ciclo de actualización automática.
+- `components/PrintableNota.tsx` — Integración de exportación a PDF plano de alta resolución (300 DPI) con `jspdf` y `html2canvas` para descarga directa en APK y envío por Telegram.
+- `supabase/functions/telegram-bot/index.ts` — Supabase Edge Function (Deno) para Webhook de Telegram con integración de Google Gemini AI (parseo a JSON) y consultas a `stock_actual`, `notas` (facturación del día) y últimas 6 notas agrupadas por Ventas, Promociones y Consignaciones.
+- `app/api/webhook/telegram/route.ts` — Webhook Serverless en Next.js listo para despliegue directo en Vercel.
+- `docs/telegram_gemini_bot_setup.md` — Guía de configuración con BotFather, API Key de Gemini y registro del Webhook (`setWebhook`).
 
 ### Prompt 35 — Entrega 1: Sesión Persistente Supabase, Índices y Estrategia Backup (2026-08-17)
 **Agente ejecutor:** Antigravity (principal)  
