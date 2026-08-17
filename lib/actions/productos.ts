@@ -165,8 +165,7 @@ export async function actualizarProducto(id: string, datos: ProductoUpdate) {
 }
 
 /**
- * Desactiva (soft-delete) un producto cambiando `estado` a false.
- * No borra el registro para mantener el historial de movimientos.
+ * Desactiva un producto cambiando `estado` a false (modo seguro).
  *
  * @param id - UUID del producto.
  */
@@ -176,5 +175,20 @@ export async function eliminarProducto(id: string) {
   return supabase
     .from('productos')
     .update({ estado: false })
+    .eq('id', id)
+}
+
+/**
+ * Elimina físicamente un producto de la base de datos (hard delete).
+ * Habilitado para la fase de pruebas y limpieza de datos.
+ *
+ * @param id - UUID del producto.
+ */
+export async function eliminarProductoFisico(id: string) {
+  const supabase = createClient()
+
+  return supabase
+    .from('productos')
+    .delete()
     .eq('id', id)
 }

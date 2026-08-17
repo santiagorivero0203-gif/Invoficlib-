@@ -70,3 +70,32 @@ export async function registrarMovimientoManual(
     .select()
     .single()
 }
+
+/**
+ * Elimina físicamente un movimiento de inventario.
+ * Habilitado para la fase de pruebas y ajuste de datos.
+ *
+ * @param id - UUID del movimiento a eliminar.
+ */
+export async function eliminarMovimiento(id: string) {
+  const supabase = createClient()
+
+  return supabase
+    .from('movimientos_inventario')
+    .delete()
+    .eq('id', id)
+}
+
+/**
+ * Elimina todos los movimientos de un producto específico (solo para pruebas).
+ *
+ * @param productoId - UUID del producto.
+ */
+export async function limpiarMovimientosDeProducto(productoId: string) {
+  const supabase = createClient()
+
+  return supabase
+    .from('movimientos_inventario')
+    .delete()
+    .eq('producto_id', productoId)
+}

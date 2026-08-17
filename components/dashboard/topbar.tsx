@@ -1,5 +1,6 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { LogOut, User, DollarSign, Bell, Menu } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { useTasas } from '@/components/providers/tasas-provider'
@@ -10,11 +11,13 @@ interface TopbarProps {
 }
 
 export default function Topbar({ onMenuToggle }: TopbarProps) {
+  const router = useRouter()
   const { user, logout } = useAuth()
   const { tasaUsd, tasaEur } = useTasas()
 
   const handleLogout = async () => {
     await logout()
+    router.replace('/login')
   }
 
   return (
