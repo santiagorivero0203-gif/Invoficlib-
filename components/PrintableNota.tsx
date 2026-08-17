@@ -1,9 +1,9 @@
-'use client'
-
-import React from 'react'
-import { Printer, X } from 'lucide-react'
+import React, { useState } from 'react'
+import { Printer, X, Download, RefreshCw, FileText } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { QRCodeDisplay } from '@/components/ui/qr-code'
+import jsPDF from 'jspdf'
+import html2canvas from 'html2canvas'
 
 export interface PrintableNotaItem {
   cantidad: number
@@ -49,14 +49,52 @@ export default function PrintableNota({
   items,
   onClose,
 }: PrintableNotaProps) {
+  const [generandoPdf, setGenerandoPdf] = useState(false)
+
   // ── 1. CÁLCULO ESTRICTO DE UNIDADES FÍSICAS (BUG FIX PREVENCIÓN) ──
   const totalItems = items.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0)
   const subtotalUsd = items.reduce((acc, item) => acc + (Number(item.totalUsd) || (item.cantidad * item.precioUsd)), 0)
   const totalUsd = subtotalUsd
 
   /**
-   * Abre una ventana emergente con solo el HTML de la nota para imprimir.
-   * Evita que el sidebar, header y otros elementos de la UI aparezcan en la impresión.
+   * Genera un archivo PDF vectorial/rasterizado limpio de alta definición (300 DPI)
+   * Ideal para guardar, enviar por Telegram o imprimir en Android (Capacitor/APK).
+   */
+  const handleDownloadPdf = async () => {
+    const element = document.getElementById('printable-nota-content')
+    if (!element) return
+
+    setGenerandoPdf(true)
+    try {
+      // Captura limpia del contenedor a escala 2x para máxima nitidez
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff',
+        logging: false,
+      })
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.98)
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'letter',
+      })
+
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+      pdf.save(`Nota-${nota.correlativo.replace('#', '')}.pdf`)
+    } catch (err) {
+      console.error('Error generando PDF:', err)
+    } finally {
+      setGenerandoPdf(false)
+    }
+  }
+
+  /**
+   * Abre diálogo nativo de impresión limpia.
    */
   const handlePrint = () => {
     const printContent = document.getElementById('printable-nota-content')
@@ -64,7 +102,6 @@ export default function PrintableNota({
 
     const printWindow = window.open('', '_blank', 'width=900,height=700,toolbar=0,menubar=0,scrollbars=1')
     if (!printWindow) {
-      // Fallback si el navegador bloquea el popup
       window.print()
       return
     }
@@ -146,13 +183,11 @@ export default function PrintableNota({
     printWindow.document.close()
     printWindow.focus()
 
-    // Esperar a que el DOM cargue antes de imprimir
     printWindow.onload = () => {
       printWindow.print()
       printWindow.close()
     }
 
-    // Fallback si onload no dispara
     setTimeout(() => {
       if (!printWindow.closed) {
         printWindow.print()
@@ -166,7 +201,8 @@ export default function PrintableNota({
       {/* Barra de Controles en Pantalla (Oculta al imprimir) */}
       <div className="mx-auto mb-6 flex max-w-4xl items-center justify-between rounded-2xl border border-slate-200 bg-white p-4 shadow-sm print:hidden">
         <div className="flex items-center gap-2">
-          <span className="font-semibold text-slate-800 text-sm">Vista Previa de Impresión</span>
+          <FileText className="h-4 w-4 text-primary-accent" />
+          <span className="font-semibold text-slate-800 text-sm">Comprobante de Entrega</span>
           <span className="rounded-full bg-slate-100 px-2.5 py-0.5 font-mono text-xs text-slate-600">
             {nota.correlativo}
           </span>
@@ -178,9 +214,32 @@ export default function PrintableNota({
               Cerrar
             </Button>
           )}
+          
+          {/* Botón Descargar PDF Plano (Perfecto para APK y Telegram) */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDownloadPdf}
+            disabled={generandoPdf}
+            className="h-9 text-xs gap-1.5 border-slate-300 hover:bg-slate-50"
+          >
+            {generandoPdf ? (
+              <>
+                <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                Generando PDF...
+              </>
+            ) : (
+              <>
+                <Download className="h-3.5 w-3.5 text-primary-accent" />
+                Descargar PDF Plano
+              </>
+            )}
+          </Button>
+
+          {/* Botón Imprimir Directo */}
           <Button variant="primary" size="sm" onClick={handlePrint} className="h-9">
             <Printer className="mr-1.5 h-4 w-4" />
-            Imprimir Nota
+            Imprimir
           </Button>
         </div>
       </div>
