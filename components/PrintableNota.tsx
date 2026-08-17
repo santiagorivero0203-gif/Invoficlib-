@@ -75,26 +75,38 @@ export default function PrintableNota({
         <head>
           <meta charset="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <title>Nota ${nota.correlativo}</title>
+          <title></title>
           <style>
             *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-            body {
-              font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-              font-size: 12px;
-              color: #0f172a;
+            html, body {
               background: white;
+              color: #0f172a;
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+              font-size: 11px;
+              line-height: 1.4;
+              -webkit-print-color-adjust: exact !important;
+              print-color-adjust: exact !important;
+            }
+            body {
               padding: 24px;
             }
-            @media print {
-              body { padding: 0; }
-              @page { size: A4; margin: 12mm 15mm; }
+            @page {
+              size: letter portrait;
+              margin: 8mm 10mm;
             }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { padding: 8px 10px; text-align: left; }
-            th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #475569; border-bottom: 2px solid #e2e8f0; }
-            td { border-bottom: 1px solid #f1f5f9; font-size: 11px; }
+            @media print {
+              html, body {
+                padding: 0;
+                margin: 0;
+              }
+              header, footer, nav { display: none !important; }
+            }
+            table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+            th, td { padding: 6px 8px; text-align: left; }
+            th { font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 0.05em; color: #1e293b; border-bottom: 2px solid #0f172a; }
+            td { border-bottom: 1px solid #e2e8f0; font-size: 11px; }
             .text-right { text-align: right; }
-            .font-mono { font-family: 'Courier New', monospace; }
+            .font-mono { font-family: 'Courier New', Courier, monospace; }
             .font-bold { font-weight: 700; }
             .font-semibold { font-weight: 600; }
             .text-slate-400 { color: #94a3b8; }
@@ -106,10 +118,23 @@ export default function PrintableNota({
             .tracking-widest { letter-spacing: 0.15em; }
             .border-t { border-top: 1px solid #e2e8f0; }
             .border-b { border-bottom: 1px solid #e2e8f0; }
-            .grid-cols-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
-            .totales { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; background: #f8fafc; }
-            .totales div { display: flex; justify-content: space-between; padding: 4px 0; }
-            .footer { margin-top: 24px; padding-top: 16px; border-top: 1px solid #e2e8f0; text-align: center; }
+            .grid { display: grid; }
+            .grid-cols-2 { grid-template-columns: 1fr 1fr; gap: 16px; }
+            .rounded-lg { border-radius: 6px; }
+            .border { border: 1px solid #cbd5e1; }
+            .p-3 { padding: 10px; }
+            .bg-slate-50 { background-color: #f8fafc; }
+            .mt-6 { margin-top: 16px; }
+            .pt-4 { padding-top: 12px; }
+            .footer-qr-container {
+              margin-top: 24px;
+              padding-top: 12px;
+              border-top: 1px solid #cbd5e1;
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              page-break-inside: avoid;
+            }
           </style>
         </head>
         <body>
@@ -127,13 +152,13 @@ export default function PrintableNota({
       printWindow.close()
     }
 
-    // Fallback si onload no dispara (algunos navegadores)
+    // Fallback si onload no dispara
     setTimeout(() => {
       if (!printWindow.closed) {
         printWindow.print()
         printWindow.close()
       }
-    }, 800)
+    }, 500)
   }
 
   return (
