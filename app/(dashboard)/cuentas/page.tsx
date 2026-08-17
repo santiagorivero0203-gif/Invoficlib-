@@ -23,7 +23,7 @@ export default function CuentasPage() {
   const [error, setError] = useState<string | null>(null)
 
   const { user } = useAuth()
-  const esAdmin = user?.rol === 'admin'
+  const esAdmin = user?.rol === 'admin' || user?.rol === 'developer'
 
   useEffect(() => {
     ;(async () => {

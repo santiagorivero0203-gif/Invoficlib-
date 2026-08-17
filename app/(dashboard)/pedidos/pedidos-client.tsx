@@ -77,9 +77,10 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
   const [busqueda, setBusqueda] = useState('')
   const [filtroFecha, setFiltroFecha] = useState<FiltroFecha>('todos')
   const [fechaEspecifica, setFechaEspecifica] = useState('')
-
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { user } = useAuth()
-  const esAdmin = user?.rol === 'admin'
+  const esAdmin = user?.rol === 'admin' || user?.rol === 'developer'
 
   // Detalle de Nota
   const [notaSeleccionadaId, setNotaSeleccionadaId] = useState<string | null>(null)

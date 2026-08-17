@@ -25,7 +25,7 @@ export type EstadoFlotante = 'abierta' | 'cerrada'
 export type TipoCliente = 'colegio' | 'vendedor' | 'general'
 
 /** Enum: rol de usuario */
-export type UserRole = 'admin' | 'secretaria'
+export type UserRole = 'admin' | 'secretaria' | 'developer'
 
 export interface Database {
   public: {

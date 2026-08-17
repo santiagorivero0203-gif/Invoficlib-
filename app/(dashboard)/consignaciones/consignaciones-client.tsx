@@ -56,7 +56,7 @@ export default function ConsignacionesClient({ initialConsignaciones }: Consigna
 
   // Auth RBAC
   const { user } = useAuth()
-  const esAdmin = user?.rol === 'admin'
+  const esAdmin = user?.rol === 'admin' || user?.rol === 'developer'
 
   const cargarConsignaciones = useCallback(async () => {
     setCargando(true)

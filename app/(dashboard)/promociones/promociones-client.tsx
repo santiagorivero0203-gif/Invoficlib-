@@ -60,11 +60,10 @@ export default function PromocionesClient({ initialPromociones }: PromocionesCli
   const [errorDevolucion, setErrorDevolucion] = useState<string | null>(null)
 
   // Finalizar promoción
-  const [cerrando, setCerrando] = useState(false)
-
-  // Auth RBAC
+  const router = useRouter()
+  const searchParams = useSearchParams()
   const { user } = useAuth()
-  const esAdmin = user?.rol === 'admin'
+  const esAdmin = user?.rol === 'admin' || user?.rol === 'developer'
 
   const cargarPromociones = useCallback(async () => {
     setCargando(true)

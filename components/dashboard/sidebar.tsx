@@ -118,7 +118,7 @@ const navigation: NavItem[] = [
 export default function Sidebar({ isOpen = false, setIsOpen }: SidebarProps) {
   const pathname = usePathname()
   const { user } = useAuth()
-  const esAdmin = user?.rol === 'admin'
+  const esAdmin = user?.rol === 'admin' || user?.rol === 'developer'
 
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     'Inventario': true,

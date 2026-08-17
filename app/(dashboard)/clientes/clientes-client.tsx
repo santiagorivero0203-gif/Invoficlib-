@@ -70,7 +70,7 @@ export default function ClientesClient({ initialClientes }: ClientesClientProps)
   const [errorModal, setErrorModal] = useState<string | null>(null)
 
   const { user } = useAuth()
-  const esAdmin = user?.rol === 'admin'
+  const esAdmin = user?.rol === 'admin' || user?.rol === 'developer'
 
   const cargarClientes = useCallback(async () => {
     setCargando(true)
