@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import {
   Plus,
   RotateCcw,
@@ -104,8 +104,6 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
 
   // Impresión
   const [mostrarImpresion, setMostrarImpresion] = useState(false)
-
-  const searchParams = useSearchParams()
 
   const cargarNotas = useCallback(async () => {
     setCargando(true)

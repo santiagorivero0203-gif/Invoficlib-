@@ -95,7 +95,7 @@ export async function getUtilidadPerdida(
     // 3. Obtener inventario físico para calcular valor del inventario
     const { data: productos } = await getProductosConStock()
     const valorInventario = (productos ?? []).reduce(
-      (acc, p) => acc + Math.max(0, p.stock_actual) * p.precio_usd,
+      (acc, p) => acc + Math.max(0, p.stock) * p.precio_usd,
       0
     )
 

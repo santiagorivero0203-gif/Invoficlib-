@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react'
 import Link from 'next/link'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   GraduationCap,
   RotateCcw,
@@ -60,6 +61,7 @@ export default function PromocionesClient({ initialPromociones }: PromocionesCli
   const [errorDevolucion, setErrorDevolucion] = useState<string | null>(null)
 
   // Finalizar promoción
+  const [cerrando, setCerrando] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
   const { user } = useAuth()
