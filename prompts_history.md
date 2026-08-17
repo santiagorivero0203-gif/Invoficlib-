@@ -263,6 +263,11 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 **Agente:** Antigravity (principal)  
 **Prompt Original:** "Ahora puedes leer tareas de notion ya que coecte el mcp es cierto? https://app.notion.com/p/Tareas-semanales-ef0053ab737283b0a86a01b7cbd73cb0?source=copy_link"
 
+## Prompt 35 (Entrega 1: Sesión Persistente Supabase, SQL Índices, Estrategia Backup y Reglas de Borrado)
+**Fecha:** 2026-08-17  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "Invoficlib es un sistema administrativo real para una empresa que reemplaza al sistema 'Fina'... Entrega 1: El SQL de los Índices de rendimiento, las reglas de borrado para pruebas y el código frontend/backend de la Sesión Persistente real de Supabase."
+
 ## Prompt 34 (Módulos de Resumen Financiero: Utilidad / Pérdida y Reportes Detallados)
 **Fecha:** 2026-08-15  
 **Agente:** Antigravity (principal)  
@@ -281,6 +286,17 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 ---
 
 ## Registro de Cambios (por prompt)
+
+### Prompt 35 — Entrega 1: Sesión Persistente Supabase, Índices y Estrategia Backup (2026-08-17)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `supabase/indexes_and_performance.sql` — Script SQL con `CREATE INDEX` en `cliente_id` de `notas`, `producto_id` de `movimientos_inventario`, `nota_id` en `detalles_nota` e índices cronológicos.
+- `database_backup_strategy.md` — Documento completo con política de respaldos (Supabase Daily, PITR, pg_dump CLI) y script SQL exacto para migrar a Soft Deletes (`deleted_at`) en producción.
+- `lib/actions/productos.ts` & `lib/actions/movimientos.ts` — Habilitadas funciones `eliminarProductoFisico`, `eliminarMovimiento` y `limpiarMovimientosDeProducto` para limpieza en pruebas.
+- `lib/supabase/client.ts` — Configuración explícita de `persistSession: true` y `autoRefreshToken: true` para almacenamiento persistente a largo plazo en Web y Capacitor.
+- `components/providers/auth-provider.tsx` — Eliminación total del `MOCK_USER` y reemplazo por autenticación real reactiva con Supabase Auth y sincronización con la tabla `perfiles` (`rol: 'admin' | 'secretaria'`).
+- `app/login/page.tsx` — Creación de la pantalla de inicio de sesión real, moderna y protegida.
+- `app/(dashboard)/layout.tsx` & `components/dashboard/topbar.tsx` — Guard de autenticación y redirección automática tras logout/login.
 
 ### Prompt 34 — Resumen Financiero (Utilidad/Pérdida y Reportes) y Push a Vercel (2026-08-15)
 **Agente ejecutor:** Antigravity (principal)  
