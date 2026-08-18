@@ -263,6 +263,11 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 **Agente:** Antigravity (principal)  
 **Prompt Original:** "Ahora puedes leer tareas de notion ya que coecte el mcp es cierto? https://app.notion.com/p/Tareas-semanales-ef0053ab737283b0a86a01b7cbd73cb0?source=copy_link"
 
+## Prompt 37 (PWA Instalable, Iconos de App y Generación de APK en la Nube sin Android Studio)
+**Fecha:** 2026-08-17  
+**Agente:** Antigravity (principal)  
+**Prompt Original:** "yo no tengo android studio / Haz todo lo demas"
+
 ## Prompt 36 (Entrega 2: CapacitorJS Live Updates, PDF Plano y Bot de Telegram con Gemini IA)
 **Fecha:** 2026-08-17  
 **Agente:** Antigravity (principal)  
@@ -291,6 +296,15 @@ Entrega el código paso a paso. Primero el SQL, luego la estructura de carpetas 
 ---
 
 ## Registro de Cambios (por prompt)
+
+### Prompt 37 — PWA Instalable, Iconos y APK en la Nube sin Android Studio (2026-08-17)
+**Agente ejecutor:** Antigravity (principal)  
+**Archivos creados/modificados:**
+- `public/manifest.json` — Manifiesto PWA completo con configuración standalone, orientación portrait, theme-color `#0f172a` y catálogo de iconos.
+- `public/icons/` — Generados iconos vectoriales (`icon.svg`) y PNGs de alta definición (`icon-192.png`, `icon-512.png`, `maskable-icon-512.png`).
+- `app/layout.tsx` — Configuración de `Viewport` y `Metadata` con enlaces a manifest, appleWebApp e iconos.
+- `app/(dashboard)/configuracion/page.tsx` — Añadida tarjeta interactiva de Aplicación Móvil (PWA y APK en la nube) con acceso a PWABuilder.
+- `docs/generar_apk_sin_android_studio.md` — Guía paso a paso para instalar en teléfonos con 1 clic o descargar el APK firmado en la nube con PWABuilder de Microsoft.
 
 ### Prompt 36 — Entrega 2: CapacitorJS Live Updates, PDF Plano y Bot de Telegram + Gemini IA (2026-08-17)
 **Agente ejecutor:** Antigravity (principal)  

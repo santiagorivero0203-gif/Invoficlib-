@@ -10,6 +10,9 @@ import {
   QrCode,
   Printer,
   ExternalLink,
+  Smartphone,
+  Download,
+  CheckCircle2,
 } from 'lucide-react'
 import { useAuth } from '@/components/providers/auth-provider'
 import { useTasas } from '@/components/providers/tasas-provider'
@@ -365,6 +368,61 @@ export default function ConfiguracionPage() {
               <Save className="h-4 w-4" />
               {perfilGuardado ? 'Perfil guardado ✓' : 'Guardar Perfil'}
             </Button>
+          </CardContent>
+        </Card>
+
+        {/* Card: Aplicación Móvil PWA y APK */}
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-accent/10 text-primary-accent border border-primary-accent/20">
+                <Smartphone className="h-5 w-5" />
+              </div>
+              <div>
+                <CardTitle>Aplicación Móvil (PWA y Android APK)</CardTitle>
+                <CardDescription>
+                  Instala Invoficlib en teléfonos Android o iPhone como aplicación nativa con Live Updates.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                  <span className="text-xs font-bold text-foreground">Instalación Directa (PWA)</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Abre <span className="font-mono text-foreground font-semibold">https://invoficlib.vercel.app</span> en Chrome desde cualquier teléfono y presiona <strong>"Instalar aplicación"</strong> en el menú.
+                </p>
+                <div className="pt-1 flex items-center gap-2">
+                  <Badge variant="disponible">Live Updates Activo</Badge>
+                  <span className="text-[10px] text-muted-foreground">Sesión persistente 24/7</span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-2.5">
+                <div className="flex items-center gap-2">
+                  <Download className="h-4 w-4 text-primary-accent shrink-0" />
+                  <span className="text-xs font-bold text-foreground">Descargar APK en 1 Clic</span>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Usa <strong>PWABuilder</strong> de Microsoft para generar el archivo <span className="font-mono text-foreground font-semibold">.apk</span> instalable sin necesidad de tener Android Studio.
+                </p>
+                <div className="pt-1">
+                  <a
+                    href="https://www.pwabuilder.com"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary-accent hover:underline"
+                  >
+                    Abrir PWABuilder Cloud
+                    <ExternalLink className="h-3.5 w-3.5" />
+                  </a>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
