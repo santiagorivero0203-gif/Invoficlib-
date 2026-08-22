@@ -1,7 +1,10 @@
 import { forwardRef, type HTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-/** Contenedor principal de tarjeta — compacto y limpio para móvil. */
+/**
+ * Contenedor principal de tarjeta — adaptativo:
+ * Compacto en móvil (rounded-2xl, shadow-sm), más espacioso en desktop.
+ */
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
@@ -16,20 +19,20 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 )
 Card.displayName = 'Card'
 
-/** Encabezado estructural de la tarjeta — padding reducido para mobile. */
+/** Encabezado estructural — padding compacto en móvil, espacioso en desktop. */
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col gap-1 p-4 pb-2', className)} {...props} />
+    <div ref={ref} className={cn('flex flex-col gap-1 p-4 pb-2 md:p-5 md:pb-3', className)} {...props} />
   )
 )
 CardHeader.displayName = 'CardHeader'
 
-/** Título principal — tipografía más compacta. */
+/** Título principal — adaptativo (text-sm en móvil, text-base en desktop). */
 export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-sm font-semibold tracking-tight text-foreground', className)}
+      className={cn('text-sm md:text-base font-semibold tracking-tight text-foreground', className)}
       {...props}
     />
   )
@@ -48,10 +51,10 @@ export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<H
 )
 CardDescription.displayName = 'CardDescription'
 
-/** Área de contenido principal de la tarjeta — padding compacto. */
+/** Área de contenido principal — padding compacto en móvil. */
 export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-4 pt-0', className)} {...props} />
+    <div ref={ref} className={cn('p-4 pt-0 md:p-5 md:pt-0', className)} {...props} />
   )
 )
 CardContent.displayName = 'CardContent'
