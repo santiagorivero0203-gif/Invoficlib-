@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { Printer, X, Download, RefreshCw, FileText } from 'lucide-react'
+import { Printer, X, Download, RefreshCw, FileText, CheckCircle2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { QRCodeDisplay } from '@/components/ui/qr-code'
 import jsPDF from 'jspdf'
-import html2canvas from 'html2canvas'
+import QRCode from 'qrcode'
 
 export interface PrintableNotaItem {
   cantidad: number
@@ -50,6 +50,7 @@ export default function PrintableNota({
   onClose,
 }: PrintableNotaProps) {
   const [generandoPdf, setGenerandoPdf] = useState(false)
+  const [pdfDescargado, setPdfDescargado] = useState(false)
 
   // ── 1. CÁLCULO ESTRICTO DE UNIDADES FÍSICAS (BUG FIX PREVENCIÓN) ──
   const totalItems = items.reduce((acc, item) => acc + (Number(item.cantidad) || 0), 0)
@@ -57,37 +58,240 @@ export default function PrintableNota({
   const totalUsd = subtotalUsd
 
   /**
-   * Genera un archivo PDF vectorial/rasterizado limpio de alta definición (300 DPI)
-   * Ideal para guardar, enviar por Telegram o imprimir en Android (Capacitor/APK).
+   * Genera un archivo PDF vectorial limpio, nítido y ultraligero con jsPDF.
+   * Totalmente compatible con navegadores móviles, Android APK y desktop.
    */
   const handleDownloadPdf = async () => {
-    const element = document.getElementById('printable-nota-content')
-    if (!element) return
-
     setGenerandoPdf(true)
+    setPdfDescargado(false)
     try {
-      // Captura limpia del contenedor a escala 2x para máxima nitidez
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff',
-        logging: false,
-      })
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.98)
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'letter',
       })
 
-      const pdfWidth = pdf.internal.pageSize.getWidth()
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+      const pageWidth = pdf.internal.pageSize.getWidth()
+      const pageHeight = pdf.internal.pageSize.getHeight()
+      const margin = 15
+      let currentY = 20
 
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
-      pdf.save(`Nota-${nota.correlativo.replace('#', '')}.pdf`)
+      // 1. Membrete Empresa
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(15)
+      pdf.setTextColor(15, 23, 42) // slate-900
+      pdf.text((empresa.nombre || 'T- ESCOLARES').toUpperCase(), margin, currentY)
+      currentY += 5
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(8.5)
+      pdf.setTextColor(71, 85, 105) // slate-600
+      if (empresa.ciudad) {
+        pdf.text(empresa.ciudad, margin, currentY)
+        currentY += 4
+      }
+      if (empresa.telefono) {
+        pdf.text(`Telf: ${empresa.telefono}`, margin, currentY)
+        currentY += 4
+      }
+      if (empresa.rif) {
+        pdf.text(`R.I.F: ${empresa.rif}`, margin, currentY)
+        currentY += 4
+      }
+
+      // 2. Recuadro Datos del Cliente y Recibo (Derecha)
+      const boxX = 105
+      const boxWidth = pageWidth - margin - boxX
+      const boxStartY = 15
+      const boxHeight = 28
+
+      pdf.setDrawColor(203, 213, 225) // slate-300
+      pdf.setFillColor(248, 250, 252) // slate-50
+      pdf.roundedRect(boxX, boxStartY, boxWidth, boxHeight, 2, 2, 'FD')
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(8)
+      pdf.setTextColor(51, 65, 85)
+      pdf.text('CLIENTE:', boxX + 3.5, boxStartY + 6)
+      pdf.setFont('helvetica', 'normal')
+      pdf.setTextColor(15, 23, 42)
+      const clienteNombreTrunc = pdf.splitTextToSize(cliente.nombre || 'Consumidor Final', boxWidth - 38)[0]
+      pdf.text(clienteNombreTrunc || 'Consumidor Final', boxX + 18, boxStartY + 6)
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('RECIBO:', boxX + boxWidth - 30, boxStartY + 6)
+      pdf.setFont('courier', 'bold')
+      pdf.text(nota.correlativo, boxX + boxWidth - 16, boxStartY + 6)
+
+      pdf.setDrawColor(226, 232, 240)
+      pdf.line(boxX + 2, boxStartY + 9, boxX + boxWidth - 2, boxStartY + 9)
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(8)
+      pdf.text('C.I/RIF:', boxX + 3.5, boxStartY + 14)
+      pdf.setFont('helvetica', 'normal')
+      pdf.text(cliente.rif || 'N/A', boxX + 18, boxStartY + 14)
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('FECHA:', boxX + boxWidth - 30, boxStartY + 14)
+      pdf.setFont('helvetica', 'normal')
+      pdf.text(nota.fecha || new Date().toLocaleDateString('es-ES'), boxX + boxWidth - 16, boxStartY + 14)
+
+      pdf.line(boxX + 2, boxStartY + 17, boxX + boxWidth - 2, boxStartY + 17)
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.text('DIRECCIÓN:', boxX + 3.5, boxStartY + 22)
+      pdf.setFont('helvetica', 'normal')
+      const dirTrunc = pdf.splitTextToSize(cliente.direccion || 'Sin dirección registrada', boxWidth - 24)[0]
+      pdf.text(dirTrunc || 'Sin dirección', boxX + 22, boxStartY + 22)
+
+      currentY = Math.max(currentY + 6, boxStartY + boxHeight + 8)
+
+      // 3. Tabla de Productos
+      const colCant = margin
+      const colDesc = margin + 20
+      const colSku = margin + 105
+      const colPrecio = margin + 140
+      const colTotal = pageWidth - margin
+
+      pdf.setFillColor(241, 245, 249) // slate-100
+      pdf.rect(margin, currentY, pageWidth - margin * 2, 7, 'F')
+      pdf.setDrawColor(15, 23, 42)
+      pdf.setLineWidth(0.4)
+      pdf.line(margin, currentY, pageWidth - margin, currentY)
+      pdf.line(margin, currentY + 7, pageWidth - margin, currentY + 7)
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(7.5)
+      pdf.setTextColor(15, 23, 42)
+      pdf.text('CANTIDAD', colCant + 2, currentY + 4.8)
+      pdf.text('DESCRIPCIÓN', colDesc, currentY + 4.8)
+      pdf.text('SKU', colSku, currentY + 4.8)
+      pdf.text('PRECIO USD', colPrecio, currentY + 4.8, { align: 'right' })
+      pdf.text('TOTAL USD', colTotal - 2, currentY + 4.8, { align: 'right' })
+
+      currentY += 7
+
+      // Filas de productos
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(8)
+      pdf.setDrawColor(226, 232, 240)
+      pdf.setLineWidth(0.2)
+
+      for (const item of items) {
+        if (currentY > pageHeight - 45) {
+          pdf.addPage()
+          currentY = 20
+        }
+
+        pdf.setTextColor(51, 65, 85)
+        pdf.text(`${item.cantidad} Und.`, colCant + 2, currentY + 5)
+        
+        pdf.setTextColor(15, 23, 42)
+        pdf.setFont('helvetica', 'bold')
+        const descLines = pdf.splitTextToSize(item.descripcion, 80)
+        pdf.text(descLines[0] || item.descripcion, colDesc, currentY + 5)
+
+        pdf.setFont('courier', 'normal')
+        pdf.setTextColor(71, 85, 105)
+        pdf.text(item.sku || 'S/C', colSku, currentY + 5)
+
+        pdf.setFont('helvetica', 'normal')
+        pdf.setTextColor(51, 65, 85)
+        pdf.text(item.precioUsd.toFixed(2), colPrecio, currentY + 5, { align: 'right' })
+
+        pdf.setFont('helvetica', 'bold')
+        pdf.setTextColor(15, 23, 42)
+        pdf.text(item.totalUsd.toFixed(2), colTotal - 2, currentY + 5, { align: 'right' })
+
+        currentY += 7
+        pdf.line(margin, currentY, pageWidth - margin, currentY)
+      }
+
+      currentY += 6
+
+      // 4. Observaciones y Totales
+      const botBoxWidth = (pageWidth - margin * 2 - 8) / 2
+      const botBoxHeight = 26
+
+      // Cuadro Observaciones
+      pdf.setDrawColor(203, 213, 225)
+      pdf.setFillColor(248, 250, 252)
+      pdf.roundedRect(margin, currentY, botBoxWidth, botBoxHeight, 2, 2, 'FD')
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(8)
+      pdf.setTextColor(51, 65, 85)
+      pdf.text('Observaciones:', margin + 4, currentY + 5)
+
+      pdf.setFont('helvetica', 'italic')
+      pdf.setFontSize(7.5)
+      pdf.setTextColor(71, 85, 105)
+      const obsLines = pdf.splitTextToSize(nota.observaciones || 'Sin observaciones registradas.', botBoxWidth - 8)
+      pdf.text(obsLines.slice(0, 3), margin + 4, currentY + 10)
+
+      // Cuadro Totales
+      const totX = margin + botBoxWidth + 8
+      pdf.roundedRect(totX, currentY, botBoxWidth, botBoxHeight, 2, 2, 'FD')
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(7.5)
+      pdf.setTextColor(71, 85, 105)
+      pdf.text('TOTAL DE ÍTEMS:', totX + 4, currentY + 5)
+      pdf.setFont('helvetica', 'bold')
+      pdf.setTextColor(15, 23, 42)
+      pdf.text(`${totalItems} unidades`, totX + botBoxWidth - 4, currentY + 5, { align: 'right' })
+
+      pdf.line(totX + 2, currentY + 8, totX + botBoxWidth - 2, currentY + 8)
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.text('SUBTOTAL USD:', totX + 4, currentY + 13.5)
+      pdf.setFont('courier', 'bold')
+      pdf.text(subtotalUsd.toFixed(2), totX + botBoxWidth - 4, currentY + 13.5, { align: 'right' })
+
+      pdf.line(totX + 2, currentY + 16.5, totX + botBoxWidth - 2, currentY + 16.5)
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(9)
+      pdf.text('TOTAL USD:', totX + 4, currentY + 22)
+      pdf.setFont('courier', 'bold')
+      pdf.setFontSize(10)
+      pdf.text(`$${totalUsd.toFixed(2)}`, totX + botBoxWidth - 4, currentY + 22, { align: 'right' })
+
+      currentY += botBoxHeight + 8
+
+      // 5. QR Code y Footer
+      try {
+        const qrDataUrl = await QRCode.toDataURL(nota.id || nota.correlativo, {
+          width: 120,
+          margin: 1,
+          color: { dark: '#0f172a', light: '#ffffff' },
+        })
+        pdf.addImage(qrDataUrl, 'PNG', margin, currentY, 16, 16)
+      } catch {
+        // Continuar si falla el QR
+      }
+
+      pdf.setFont('helvetica', 'bold')
+      pdf.setFontSize(8)
+      pdf.setTextColor(51, 65, 85)
+      pdf.text(`Comprobante Oficial ${nota.correlativo}`, margin + 20, currentY + 5)
+
+      pdf.setFont('helvetica', 'normal')
+      pdf.setFontSize(7)
+      pdf.setTextColor(100, 116, 139)
+      pdf.text('Documento de control interno no fiscal emitido mediante el sistema Invoficlib.', margin + 20, currentY + 9)
+      pdf.text(`Fecha y hora de emisión: ${new Date().toLocaleString('es-ES')}`, margin + 20, currentY + 13)
+
+      // 6. Guardar y disparar descarga
+      const filename = `Nota-${nota.correlativo.replace('#', '')}.pdf`
+      pdf.save(filename)
+      setPdfDescargado(true)
+      setTimeout(() => setPdfDescargado(false), 4000)
     } catch (err) {
-      console.error('Error generando PDF:', err)
+      console.error('Error generando PDF vectorial:', err)
+      // Fallback
+      window.print()
     } finally {
       setGenerandoPdf(false)
     }
@@ -215,18 +419,23 @@ export default function PrintableNota({
             </Button>
           )}
           
-          {/* Botón Descargar PDF Plano (Perfecto para APK y Telegram) */}
+          {/* Botón Descargar PDF (Nativo Vectorial) */}
           <Button
             variant="outline"
             size="sm"
             onClick={handleDownloadPdf}
             disabled={generandoPdf}
-            className="h-9 text-xs gap-1.5 border-slate-300 hover:bg-slate-50"
+            className="h-9 text-xs gap-1.5 border-slate-300 hover:bg-slate-50 transition-all"
           >
             {generandoPdf ? (
               <>
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
                 Generando PDF...
+              </>
+            ) : pdfDescargado ? (
+              <>
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                <span className="text-emerald-700 font-semibold">¡PDF Descargado!</span>
               </>
             ) : (
               <>
