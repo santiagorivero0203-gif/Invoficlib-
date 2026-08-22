@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const viewport: Viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#ffffff",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -51,8 +51,8 @@ export default function RootLayout({
       <body className="antialiased bg-background text-foreground min-h-screen transition-colors duration-200" suppressHydrationWarning>
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          defaultTheme="light"
+          enableSystem={false}
           disableTransitionOnChange
         >
           <AuthProvider>

@@ -1,13 +1,13 @@
 import { forwardRef, type HTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
-/** Contenedor principal de tarjeta con estilo premium glassmorphic. */
+/** Contenedor principal de tarjeta — compacto y limpio para móvil. */
 export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
       className={cn(
-        'rounded-[20px] border border-border bg-card text-card-foreground shadow-[0_10px_40px_-10px_rgba(0,0,0,0.04)] dark:shadow-none transition-all duration-300 hover:shadow-[0_15px_50px_-10px_rgba(0,0,0,0.07)]',
+        'rounded-2xl border border-border bg-card text-card-foreground shadow-sm transition-all duration-200',
         className
       )}
       {...props}
@@ -16,20 +16,20 @@ export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
 )
 Card.displayName = 'Card'
 
-/** Encabezado estructural de la tarjeta. */
+/** Encabezado estructural de la tarjeta — padding reducido para mobile. */
 export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('flex flex-col gap-1.5 p-6 pb-4', className)} {...props} />
+    <div ref={ref} className={cn('flex flex-col gap-1 p-4 pb-2', className)} {...props} />
   )
 )
 CardHeader.displayName = 'CardHeader'
 
-/** Título principal dentro del encabezado de la tarjeta. */
+/** Título principal — tipografía más compacta. */
 export const CardTitle = forwardRef<HTMLHeadingElement, HTMLAttributes<HTMLHeadingElement>>(
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn('text-lg font-bold tracking-tight text-foreground', className)}
+      className={cn('text-sm font-semibold tracking-tight text-foreground', className)}
       {...props}
     />
   )
@@ -41,17 +41,17 @@ export const CardDescription = forwardRef<HTMLParagraphElement, HTMLAttributes<H
   ({ className, ...props }, ref) => (
     <p
       ref={ref}
-      className={cn('text-sm text-muted-foreground', className)}
+      className={cn('text-xs text-muted-foreground', className)}
       {...props}
     />
   )
 )
 CardDescription.displayName = 'CardDescription'
 
-/** Área de contenido principal de la tarjeta. */
+/** Área de contenido principal de la tarjeta — padding compacto. */
 export const CardContent = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
   ({ className, ...props }, ref) => (
-    <div ref={ref} className={cn('p-6 pt-0', className)} {...props} />
+    <div ref={ref} className={cn('p-4 pt-0', className)} {...props} />
   )
 )
 CardContent.displayName = 'CardContent'

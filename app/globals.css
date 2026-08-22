@@ -1,27 +1,27 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f5f7;        /* Apple Light Gray */
-  --foreground: #111111;        /* Stronger black for legibility */
-  --card: #ffffff;              /* Pure White Card */
-  --card-foreground: #111111;
-  --border: rgba(0, 0, 0, 0.09);
-  --muted: #e5e5ea;
-  --muted-foreground: #515154;  /* Darker muted — más legible sobre fondo claro */
-  --primary-accent: #0071e3;    /* Apple Blue */
+  --background: #f8f9fa;        /* Gris casi blanco — limpio como Fina */
+  --foreground: #1a1a1a;        /* Negro suave para texto principal */
+  --card: #ffffff;              /* Tarjetas blancas puras */
+  --card-foreground: #1a1a1a;
+  --border: rgba(0, 0, 0, 0.06); /* Bordes más sutiles */
+  --muted: #f0f1f3;
+  --muted-foreground: #6b7280;  /* Gris medio — legible sin ser pesado */
+  --primary-accent: #6c47ff;    /* Violeta vibrante como Fina */
 }
 
 @custom-variant dark (&:is(.dark *));
 
 .dark {
-  --background: #060913;        /* Deep Slate Dark */
-  --foreground: #f1f5f9;        /* Slightly warm white — más legible */
-  --card: #0d1423;
+  --background: #0a0a0f;
+  --foreground: #f1f5f9;
+  --card: #12121a;
   --card-foreground: #f1f5f9;
-  --border: rgba(255, 255, 255, 0.09);
-  --muted: #1e293b;
-  --muted-foreground: #a8b8cc;  /* Más claro para mejor contraste en dark */
-  --primary-accent: #38bdf8;
+  --border: rgba(255, 255, 255, 0.08);
+  --muted: #1e1e2a;
+  --muted-foreground: #a1a1aa;
+  --primary-accent: #8b6fff;
 }
 
 @theme inline {
@@ -50,8 +50,8 @@ body {
 
 /* Custom scrollbar matching active theme */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
 }
 
 ::-webkit-scrollbar-track {
@@ -59,12 +59,12 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+  background: color-mix(in srgb, var(--foreground) 8%, transparent);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--foreground) 20%, transparent);
+  background: color-mix(in srgb, var(--foreground) 16%, transparent);
 }
 
 /* Desactivar flechitas (spinners) en inputs numéricos para permitir escritura limpia por teclado */
@@ -141,25 +141,25 @@ input[type="number"] {
   animation: pulseSubtle 3s ease-in-out infinite;
 }
 
-/* Tarjetas interactivas con elevación Apple */
+/* Tarjetas interactivas con elevación sutil */
 .card-interactive {
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .card-interactive:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.06);
 }
 
 .dark .card-interactive:hover {
-  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 24px -6px rgba(0, 0, 0, 0.3);
 }
 
-/* Transición suave y cinematográfica entre páginas */
+/* Transición suave entre páginas */
 @keyframes pageEntrance {
   0% {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(4px);
   }
   100% {
     opacity: 1;
@@ -168,7 +168,7 @@ input[type="number"] {
 }
 
 .page-transition {
-  animation: pageEntrance 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: pageEntrance 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   will-change: opacity, transform;
 }
 
@@ -192,11 +192,10 @@ input[type="number"] {
   position: fixed;
   top: 0;
   left: 0;
-  height: 2.5px;
-  background: linear-gradient(90deg, #3b82f6, #6366f1, #8b5cf6);
-  box-shadow: 0 0 10px rgba(99, 102, 241, 0.6);
+  height: 2px;
+  background: linear-gradient(90deg, #6c47ff, #a78bfa, #c084fc);
+  box-shadow: 0 0 8px rgba(108, 71, 255, 0.4);
   z-index: 9999;
   animation: topBarGlow 0.45s ease-out forwards;
   pointer-events: none;
 }
-

@@ -53,7 +53,7 @@ export default function DashboardLayout({
         <Topbar onMenuToggle={() => setSidebarOpen(true)} />
 
         {/* Contenido Principal con fondo minimalista */}
-        <main className="flex-1 overflow-y-auto p-4 md:p-8 bg-background transition-colors duration-300">
+        <main className="flex-1 overflow-y-auto p-3 md:p-6 bg-background transition-colors duration-200">
           <div className="mx-auto max-w-7xl">
             {children}
           </div>
