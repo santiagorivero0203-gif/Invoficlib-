@@ -203,119 +203,135 @@ export default function PromocionesClient({ initialPromociones }: PromocionesCli
   const totalCerradas = promociones.filter((p) => p.estado_flotante === 'cerrada').length
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* ─── Encabezado y Acciones ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 dark:bg-amber-500/20 dark:text-amber-400">
-              <GraduationCap className="h-5 w-5" />
-            </span>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Promociones & Muestras</h2>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+            <GraduationCap className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Promociones y Muestras
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Control de entregas de cortesía a docentes y colegios para adopción escolar.
+            </p>
           </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Link href="/vender">
-            <Button variant="primary">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button variant="primary" size="md" className="h-10 px-4 rounded-xl text-xs font-semibold shadow-xs">
+              <Plus className="mr-1.5 h-4 w-4" />
               Nueva Entrega de Muestras
             </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="border-l-4 border-l-amber-500">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Muestras en Curso</p>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="font-mono text-2xl font-bold text-foreground">{totalAbiertas}</span>
-              <Badge variant="warning">En Evaluación</Badge>
+      {/* ─── Tarjetas de Métricas ─── */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-5">
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-400 to-amber-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Muestras en Curso
+              </span>
+              <Badge variant="warning" className="text-[10px]">En Evaluación</Badge>
             </div>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{totalAbiertas}</p>
             <p className="mt-1 text-xs text-muted-foreground">Colegios con libros de prueba activos</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-purple-500">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Naturaleza Comercial</p>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="font-semibold text-lg text-foreground">Cortesía / Muestra</span>
-              <Badge variant="info">Sin Cobro</Badge>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-purple-400 to-purple-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Naturaleza Comercial
+              </span>
+              <Badge variant="info" className="text-[10px]">Sin Cobro</Badge>
             </div>
+            <p className="font-bold text-lg md:text-xl text-foreground">Cortesía / Muestra</p>
             <p className="mt-1 text-xs text-muted-foreground">Libros obsequiados para adopción escolar</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-500">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Promociones Concluidas</p>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="font-mono text-2xl font-bold text-foreground">{totalCerradas}</span>
-              <Badge variant="pagada">Cerradas</Badge>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Concluidas / Cerradas
+              </span>
+              <Badge variant="disponible" className="text-[10px]">Finalizadas</Badge>
             </div>
-            <p className="mt-1 text-xs text-muted-foreground">Evaluaciones finalizadas por docentes</p>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{totalCerradas}</p>
+            <p className="mt-1 text-xs text-muted-foreground">Muestras con ciclo de adopción cerrado</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
-          <button
-            type="button"
-            onClick={() => setFiltroEstado('abiertas')}
-            className={cn(
-              'rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
-              filtroEstado === 'abiertas'
-                ? 'bg-foreground text-background shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            En Evaluación ({totalAbiertas})
-          </button>
-          <button
-            type="button"
-            onClick={() => setFiltroEstado('cerradas')}
-            className={cn(
-              'rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
-              filtroEstado === 'cerradas'
-                ? 'bg-foreground text-background shadow-xs'
-                : 'text-muted-foreground hover:text-foreground'
-            )}
-          >
-            Concluidas ({totalCerradas})
-          </button>
+      {/* ─── Toolbar de Filtros y Búsqueda (h-10 homogénea) ─── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex h-10 items-center gap-1 rounded-xl border border-border bg-muted/40 p-1">
           <button
             type="button"
             onClick={() => setFiltroEstado('todas')}
             className={cn(
-              'rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
+              'h-full rounded-lg px-3.5 text-xs font-medium transition-all',
               filtroEstado === 'todas'
-                ? 'bg-foreground text-background shadow-xs'
+                ? 'bg-card text-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
             Todas ({promociones.length})
           </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado('abiertas')}
+            className={cn(
+              'h-full rounded-lg px-3.5 text-xs font-medium transition-all',
+              filtroEstado === 'abiertas'
+                ? 'bg-card text-foreground font-semibold shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            En Curso ({totalAbiertas})
+          </button>
+          <button
+            type="button"
+            onClick={() => setFiltroEstado('cerradas')}
+            className={cn(
+              'h-full rounded-lg px-3.5 text-xs font-medium transition-all',
+              filtroEstado === 'cerradas'
+                ? 'bg-card text-foreground font-semibold shadow-xs'
+                : 'text-muted-foreground hover:text-foreground'
+            )}
+          >
+            Concluidas ({totalCerradas})
+          </button>
         </div>
 
         <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
-            placeholder="Buscar por colegio o correlativo..."
+            placeholder="Buscar por correlativo o docente..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-xs focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
+            className="h-10 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
           />
         </div>
       </div>
 
-      {error && <ErrorMessage message={error} />}
-
+      {/* ─── Tabla de Promociones ─── */}
       {cargando && promociones.length === 0 ? (
         <div className="flex items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/20 border-t-foreground" />
+          <div className="h-8 w-8 animate-spin rounded-full border-3 border-muted-foreground/20 border-t-foreground" />
         </div>
       ) : promocionesFiltradas.length === 0 ? (
         <Card>
@@ -328,60 +344,57 @@ export default function PromocionesClient({ initialPromociones }: PromocionesCli
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Nota / Código</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Colegio / Docente</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Estado</th>
-                    <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Tipo</th>
-                    <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Fecha de Entrega</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/20">
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Nota / Código</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Colegio / Docente</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Estado</th>
+                  <th className="hidden px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:table-cell">Tipo</th>
+                  <th className="hidden px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:table-cell">Fecha de Entrega</th>
+                  <th className="px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {promocionesFiltradas.map((promo) => (
+                  <tr
+                    key={promo.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="px-4 py-3.5 font-mono font-semibold text-foreground text-xs">
+                      {promo.correlativo}
+                    </td>
+                    <td className="px-4 py-3.5 font-semibold text-foreground">
+                      {promo.cliente_nombre}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Badge variant={promo.estado_flotante === 'abierta' ? 'warning' : 'disponible'}>
+                        {promo.estado_flotante === 'abierta' ? 'En Evaluación' : 'Concluida'}
+                      </Badge>
+                    </td>
+                    <td className="hidden px-4 py-3.5 sm:table-cell">
+                      <span className="text-xs text-muted-foreground">Muestras Gratuitas</span>
+                    </td>
+                    <td className="hidden px-4 py-3.5 font-mono text-xs text-muted-foreground md:table-cell">
+                      {formatDate(promo.fecha_creacion)}
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 px-2.5 text-xs rounded-lg"
+                        onClick={() => abrirDetalle(promo)}
+                      >
+                        Ver Detalle
+                      </Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {promocionesFiltradas.map((promo) => (
-                    <tr
-                      key={promo.id}
-                      className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-4 py-3 font-mono font-medium text-foreground text-xs">
-                        {promo.correlativo}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-foreground">
-                        {promo.cliente_nombre}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={promo.estado_flotante === 'abierta' ? 'warning' : 'pagada'}>
-                          {promo.estado_flotante === 'abierta' ? 'En Evaluación' : 'Concluida'}
-                        </Badge>
-                      </td>
-                      <td className="hidden px-4 py-3 sm:table-cell">
-                        <span className="text-xs text-muted-foreground">Muestras Gratuitas</span>
-                      </td>
-                      <td className="hidden px-4 py-3 text-xs text-muted-foreground md:table-cell">
-                        {formatDate(promo.fecha_creacion)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => abrirDetalle(promo)}
-                          className="h-8 gap-1 text-xs font-medium"
-                        >
-                          Ver y Devolver Libros
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 

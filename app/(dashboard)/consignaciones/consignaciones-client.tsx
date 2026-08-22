@@ -202,74 +202,88 @@ export default function ConsignacionesClient({ initialConsignaciones }: Consigna
     .reduce((acc, c) => acc + c.total_usd, 0)
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* ─── Encabezado y Acciones ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-500/10 text-cyan-600 dark:bg-cyan-500/20 dark:text-cyan-400">
-              <Handshake className="h-5 w-5" />
-            </span>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Consignaciones</h2>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+            <Handshake className="h-5 w-5" />
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Lotes de libros entregados a vendedores externos con rendición y corte semanal de ventas y devoluciones.
-          </p>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Consignaciones de Libros
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Control de inventario entregado a vendedores y librerías externas.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2">
           <Link href="/vender">
-            <Button variant="primary">
-              <Plus className="mr-2 h-4 w-4" />
+            <Button variant="primary" size="md" className="h-10 px-4 rounded-xl text-xs font-semibold shadow-xs">
+              <Plus className="mr-1.5 h-4 w-4" />
               Nueva Consignación
             </Button>
           </Link>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <Card className="border-l-4 border-l-cyan-500">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Consignaciones Activas</p>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="font-mono text-2xl font-bold text-foreground">{totalAbiertas}</span>
-              <Badge variant="info">En Calle</Badge>
+      {/* ─── Tarjetas de Métricas ─── */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-5">
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-cyan-400 to-cyan-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Consignaciones Activas
+              </span>
+              <Badge variant="info" className="text-[10px]">En Calle</Badge>
             </div>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{totalAbiertas}</p>
             <p className="mt-1 text-xs text-muted-foreground">Vendedores con libros pendientes de corte</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-amber-500">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Valor en Consignación</p>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="font-mono text-2xl font-bold text-foreground">{formatUsd(valorEnConsignacion)}</span>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-400 to-amber-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Valor en Consignación
+              </span>
               <span className="font-mono text-xs text-muted-foreground">Flotante</span>
             </div>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{formatUsd(valorEnConsignacion)}</p>
             <p className="mt-1 text-xs text-muted-foreground">Se convierte en saldo al hacer los cortes</p>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-emerald-500">
-          <CardContent className="p-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Consignaciones Finalizadas</p>
-            <div className="mt-2 flex items-baseline justify-between">
-              <span className="font-mono text-2xl font-bold text-foreground">{totalCerradas}</span>
-              <Badge variant="pagada">Cerradas</Badge>
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Finalizadas / Rendidas
+              </span>
+              <Badge variant="pagada" className="text-[10px]">Cerradas</Badge>
             </div>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{totalCerradas}</p>
             <p className="mt-1 text-xs text-muted-foreground">Cortes 100% liquidados y rendidos</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-1 rounded-xl border border-border bg-card p-1">
+      {/* ─── Toolbar de Filtros y Búsqueda (h-10 homogénea) ─── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex h-10 items-center gap-1 rounded-xl border border-border bg-muted/40 p-1">
           <button
             type="button"
             onClick={() => setFiltroEstado('abiertas')}
             className={cn(
-              'rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
+              'h-full rounded-lg px-3.5 text-xs font-medium transition-all',
               filtroEstado === 'abiertas'
-                ? 'bg-foreground text-background shadow-xs'
+                ? 'bg-card text-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
@@ -279,9 +293,9 @@ export default function ConsignacionesClient({ initialConsignaciones }: Consigna
             type="button"
             onClick={() => setFiltroEstado('cerradas')}
             className={cn(
-              'rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
+              'h-full rounded-lg px-3.5 text-xs font-medium transition-all',
               filtroEstado === 'cerradas'
-                ? 'bg-foreground text-background shadow-xs'
+                ? 'bg-card text-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
@@ -291,9 +305,9 @@ export default function ConsignacionesClient({ initialConsignaciones }: Consigna
             type="button"
             onClick={() => setFiltroEstado('todas')}
             className={cn(
-              'rounded-lg px-3 py-1.5 text-xs font-medium transition-all',
+              'h-full rounded-lg px-3.5 text-xs font-medium transition-all',
               filtroEstado === 'todas'
-                ? 'bg-foreground text-background shadow-xs'
+                ? 'bg-card text-foreground font-semibold shadow-xs'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
@@ -302,85 +316,85 @@ export default function ConsignacionesClient({ initialConsignaciones }: Consigna
         </div>
 
         <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
             placeholder="Buscar por vendedor o código..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card py-2 pl-9 pr-4 text-xs focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
+            className="h-10 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
           />
         </div>
       </div>
 
       {error && <ErrorMessage message={error} />}
 
+      {/* ─── Tabla de Consignaciones ─── */}
       {cargando && consignaciones.length === 0 ? (
         <div className="flex items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/20 border-t-foreground" />
+          <div className="h-8 w-8 animate-spin rounded-full border-3 border-muted-foreground/20 border-t-foreground" />
         </div>
       ) : consignacionesFiltradas.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center justify-center py-16">
-            <Handshake className="mb-3 h-12 w-12 text-muted-foreground/40" />
-            <p className="font-medium text-foreground">No hay notas de consignación en esta vista.</p>
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <Handshake className="mb-3 h-12 w-12 text-muted-foreground/30" />
+            <p className="font-semibold text-foreground">No hay notas de consignación en esta vista.</p>
+            <p className="text-xs text-muted-foreground mt-1">Crea una nueva consignación desde el botón superior.</p>
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Nota / Código</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Vendedor</th>
-                    <th className="px-4 py-3 font-medium text-muted-foreground">Estado</th>
-                    <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Monto en Calle</th>
-                    <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Fecha de Entrega</th>
-                    <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acción</th>
+        <Card className="overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/20">
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Nota / Código</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Vendedor</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Estado</th>
+                  <th className="hidden px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:table-cell">Monto en Calle</th>
+                  <th className="hidden px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:table-cell">Fecha de Entrega</th>
+                  <th className="px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Acción</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {consignacionesFiltradas.map((consig) => (
+                  <tr
+                    key={consig.id}
+                    className="hover:bg-muted/30 transition-colors"
+                  >
+                    <td className="px-4 py-3.5 font-mono font-semibold text-foreground text-xs">
+                      {consig.correlativo}
+                    </td>
+                    <td className="px-4 py-3.5 font-semibold text-foreground">
+                      {consig.cliente_nombre}
+                    </td>
+                    <td className="px-4 py-3.5">
+                      <Badge variant={consig.estado_flotante === 'abierta' ? 'info' : 'pagada'}>
+                        {consig.estado_flotante === 'abierta' ? 'En Calle' : 'Finalizada'}
+                      </Badge>
+                    </td>
+                    <td className="hidden px-4 py-3.5 font-mono sm:table-cell">
+                      {formatUsd(consig.total_usd)}
+                    </td>
+                    <td className="hidden px-4 py-3.5 text-xs text-muted-foreground md:table-cell">
+                      {formatDate(consig.fecha_creacion)}
+                    </td>
+                    <td className="px-4 py-3.5 text-right">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => abrirDetalle(consig)}
+                        className="h-8 px-2.5 text-xs rounded-lg gap-1 font-semibold"
+                      >
+                        Ver / Hacer Corte
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {consignacionesFiltradas.map((consig) => (
-                    <tr
-                      key={consig.id}
-                      className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors"
-                    >
-                      <td className="px-4 py-3 font-mono font-medium text-foreground text-xs">
-                        {consig.correlativo}
-                      </td>
-                      <td className="px-4 py-3 font-medium text-foreground">
-                        {consig.cliente_nombre}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={consig.estado_flotante === 'abierta' ? 'info' : 'pagada'}>
-                          {consig.estado_flotante === 'abierta' ? 'En Calle' : 'Finalizada'}
-                        </Badge>
-                      </td>
-                      <td className="hidden px-4 py-3 font-mono sm:table-cell">
-                        {formatUsd(consig.total_usd)}
-                      </td>
-                      <td className="hidden px-4 py-3 text-xs text-muted-foreground md:table-cell">
-                        {formatDate(consig.fecha_creacion)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => abrirDetalle(consig)}
-                          className="h-8 gap-1 text-xs"
-                        >
-                          Ver / Hacer Corte
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 

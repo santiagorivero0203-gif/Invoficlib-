@@ -133,39 +133,75 @@ export default function GastosPage() {
   }
 
   const metricas = [
-    { label: 'Total Gastos', value: resumen.total, accent: 'border-l-rose-500' },
-    { label: 'Gastos Fijos', value: resumen.fijos, accent: 'border-l-violet-500' },
-    { label: 'Gastos Variables', value: resumen.variables, accent: 'border-l-sky-500' },
-    { label: 'Por Pagar', value: resumen.por_pagar, accent: 'border-l-amber-500' },
+    {
+      label: 'Total Gastos',
+      value: resumen.total,
+      gradient: 'from-rose-400 to-rose-500',
+      iconBg: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
+    },
+    {
+      label: 'Gastos Fijos',
+      value: resumen.fijos,
+      gradient: 'from-violet-400 to-violet-500',
+      iconBg: 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
+    },
+    {
+      label: 'Gastos Variables',
+      value: resumen.variables,
+      gradient: 'from-sky-400 to-sky-500',
+      iconBg: 'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400',
+    },
+    {
+      label: 'Por Pagar',
+      value: resumen.por_pagar,
+      gradient: 'from-amber-400 to-amber-500',
+      iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
+    },
   ]
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* ─── Encabezado y Acciones ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Gastos</h2>
-          <p className="text-muted-foreground">Registro de gastos fijos y variables del negocio.</p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+            <Receipt className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Control de Gastos
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Registro de egresos operativos, administrativos y fijos del negocio.
+            </p>
+          </div>
         </div>
-        <Button variant="primary" onClick={abrirModal}>
-          <Plus className="h-4 w-4" />
+
+        <Button variant="primary" size="md" onClick={abrirModal} className="h-10 px-4 rounded-xl text-xs font-semibold shadow-xs">
+          <Plus className="mr-1.5 h-4 w-4" />
           Agregar Gasto
         </Button>
       </div>
 
-      {/* Métricas superiores */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 md:gap-6">
+      {/* ─── Métricas Superiores ─── */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
         {metricas.map((m) => (
-          <Card key={m.label} className={cn('border-l-4 p-5', m.accent)}>
-            <p className="text-sm text-muted-foreground">{m.label}</p>
-            <p className="mt-1 font-mono text-2xl font-bold tracking-tight text-foreground">
-              {formatUsd(m.value)}
-            </p>
+          <Card key={m.label} className="relative overflow-hidden">
+            <div className={cn('absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r', m.gradient)} />
+            <CardContent className="p-4 md:p-5">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                {m.label}
+              </span>
+              <p className="mt-2 font-mono text-xl md:text-2xl font-bold tracking-tight text-foreground">
+                {formatUsd(m.value)}
+              </p>
+            </CardContent>
           </Card>
         ))}
       </div>
 
-      {/* Filtros */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* ─── Filtros ─── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs
           tabs={[
             { id: 'todos', label: 'Todos' },
@@ -188,11 +224,11 @@ export default function GastosPage() {
 
       {error && <ErrorMessage message={error} />}
 
-      {/* Listado */}
-      <Card>
+      {/* ─── Listado ─── */}
+      <Card className="overflow-hidden">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Receipt className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Receipt className="h-4 w-4 text-muted-foreground" />
             Registro de Gastos
           </CardTitle>
         </CardHeader>
@@ -211,7 +247,7 @@ export default function GastosPage() {
                   className="flex flex-col gap-2 rounded-xl border border-border/60 bg-muted/20 px-4 py-3 transition-colors hover:bg-muted/40 sm:flex-row sm:items-center sm:justify-between"
                 >
                   <div>
-                    <p className="font-medium text-foreground">{gasto.nombre}</p>
+                    <p className="font-semibold text-foreground">{gasto.nombre}</p>
                     <p className="text-xs text-muted-foreground">
                       {gasto.categoria} · {gasto.tipo} · {formatDate(gasto.fecha)}
                     </p>

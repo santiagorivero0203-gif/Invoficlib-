@@ -260,58 +260,67 @@ export default function VenderClient({ productos, clientes: clientesIniciales }:
   }
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <Link
-            href="/pedidos"
-            className="mb-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5" />
-            Volver a Pedidos
-          </Link>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Punto de Venta & Emisión</h2>
-          <p className="text-muted-foreground text-sm">
-            Emite ventas directas, entregas de muestras a colegios o consignaciones a vendedores.
-          </p>
-        </div>
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* ─── Encabezado y Navegación ─── */}
+      <div className="space-y-3">
+        <Link
+          href="/pedidos"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors group"
+        >
+          <ArrowLeft className="h-3.5 w-3.5 transition-transform group-hover:-translate-x-0.5" />
+          <span>Volver a Pedidos</span>
+        </Link>
 
-        {/* Switch bimoneda */}
-        <div className="flex items-center gap-2 rounded-xl border border-border bg-card p-1">
-          {(['USD', 'VES'] as Moneda[]).map((m) => (
-            <button
-              key={m}
-              type="button"
-              onClick={() => setMoneda(m)}
-              className={cn(
-                'rounded-lg px-4 py-2 text-sm font-medium transition-all',
-                moneda === m
-                  ? 'bg-foreground text-background shadow-xs'
-                  : 'text-muted-foreground hover:text-foreground'
-              )}
-            >
-              {m === 'USD' ? '$ USD' : 'Bs. VES'}
-            </button>
-          ))}
-          <span className="hidden px-2 font-mono text-[10px] text-muted-foreground sm:inline">
-            1$ = {tasa} Bs.
-          </span>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+              <ShoppingBag className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+                Punto de Venta & Emisión
+              </h2>
+              <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+                Emite ventas directas, entregas de muestras a colegios o consignaciones a vendedores.
+              </p>
+            </div>
+          </div>
+
+          {/* Switch bimoneda (h-10) */}
+          <div className="flex h-10 items-center gap-1 rounded-xl border border-border bg-card p-1">
+            {(['USD', 'VES'] as Moneda[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMoneda(m)}
+                className={cn(
+                  'h-full rounded-lg px-3.5 text-xs font-semibold transition-all',
+                  moneda === m
+                    ? 'bg-foreground text-background shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                {m === 'USD' ? '$ USD' : 'Bs. VES'}
+              </button>
+            ))}
+            <span className="hidden px-2 font-mono text-[10px] text-muted-foreground sm:inline">
+              1$ = {tasa} Bs.
+            </span>
+          </div>
         </div>
       </div>
-
-      {/* Banner de tasa faltante — no aplica, useTasas siempre provee un valor */}
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
         {/* Catálogo de Productos / Libros */}
         <div className="space-y-4 lg:col-span-2">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="search"
               placeholder="Buscar libro por título o SKU..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
+              className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs md:text-sm focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
             />
           </div>
 
@@ -353,8 +362,9 @@ export default function VenderClient({ productos, clientes: clientesIniciales }:
         </div>
 
         {/* Ticket / Nota en curso */}
-        <div className="lg:sticky lg:top-6 lg:self-start">
-          <Card className="border-l-4 border-l-primary-accent shadow-xs">
+        <div className="lg:sticky lg:top-20 lg:self-start">
+          <Card className="relative overflow-hidden shadow-xs">
+            <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary-accent to-violet-500" />
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center justify-between text-base">
                 <span className="flex items-center gap-2">

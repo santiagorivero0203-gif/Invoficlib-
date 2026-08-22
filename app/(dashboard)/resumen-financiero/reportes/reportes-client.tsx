@@ -113,15 +113,19 @@ export default function ReportesClient({ initialData }: ReportesClientProps) {
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="flex flex-col gap-2 border-b border-border pb-4">
-        <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-          <FileSpreadsheet className="h-4 w-4 text-primary-accent" />
-          <span>Resumen Financiero</span>
+      {/* ─── Header ─── */}
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+          <FileSpreadsheet className="h-5 w-5" />
         </div>
-        <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-          Reportes
-        </h2>
+        <div>
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+            Reportes Financieros
+          </h2>
+          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+            Auditoría detallada de órdenes, canales de venta, métodos de pago y desglose contable.
+          </p>
+        </div>
       </div>
 
       {/* Barra de Filtros de Reporte */}

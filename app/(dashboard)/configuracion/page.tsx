@@ -160,12 +160,19 @@ export default function ConfiguracionPage() {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-5xl">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight text-foreground">Configuración</h2>
-        <p className="text-sm text-muted-foreground mt-1">
-          Ajustes del sistema, tasas oficiales del BCV, lector QR de notas y perfil de usuario.
-        </p>
+    <div className="space-y-6 md:space-y-8 animate-fade-in max-w-5xl">
+      <div className="flex items-center gap-3">
+        <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+          <QrCode className="h-5 w-5" />
+        </div>
+        <div>
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+            Configuración del Sistema
+          </h2>
+          <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+            Ajustes generales, tasas oficiales del BCV, lector QR de notas y perfil de usuario.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 items-start">

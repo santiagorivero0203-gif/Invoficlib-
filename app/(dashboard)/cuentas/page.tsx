@@ -133,35 +133,40 @@ export default function CuentasPage() {
       sublabel: 'Ventas netas del período',
       value: resumen.ingresos_usd,
       icon: DollarSign,
-      accent: 'border-l-emerald-500',
+      gradient: 'from-emerald-400 to-emerald-500',
+      iconBg: 'bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400',
     },
     {
-      label: 'Costo de Mercancía (COGS)',
-      sublabel: 'Costo directo de productos vendidos',
+      label: 'Costo Mercancía (COGS)',
+      sublabel: 'Costo directo productos vendidos',
       value: resumen.cogs_usd,
       icon: Package,
-      accent: 'border-l-rose-500',
+      gradient: 'from-rose-400 to-rose-500',
+      iconBg: 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-400',
     },
     {
       label: 'Utilidad Bruta',
       sublabel: `Margen ${margenBrutoPct}%`,
       value: resumen.utilidad_bruta_usd,
       icon: TrendingUp,
-      accent: 'border-l-sky-500',
+      gradient: 'from-sky-400 to-sky-500',
+      iconBg: 'bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400',
     },
     {
       label: 'Gastos Operativos',
       sublabel: 'Fijos + variables del mes',
       value: resumen.gastos_op_usd,
       icon: Receipt,
-      accent: 'border-l-amber-500',
+      gradient: 'from-amber-400 to-amber-500',
+      iconBg: 'bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400',
     },
     {
       label: 'Utilidad Neta',
       sublabel: `Margen neto ${resumen.margen_neto_pct}%`,
       value: resumen.utilidad_neta_usd,
       icon: PiggyBank,
-      accent: 'border-l-violet-500',
+      gradient: 'from-violet-400 to-violet-500',
+      iconBg: 'bg-violet-50 text-violet-600 dark:bg-violet-500/10 dark:text-violet-400',
     },
   ]
 
@@ -176,31 +181,34 @@ export default function CuentasPage() {
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight text-foreground">Resumen Financiero</h2>
-        <p className="text-muted-foreground">
+        <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Resumen Financiero</h2>
+        <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
           Dashboard gerencial de rentabilidad — período actual.
         </p>
       </div>
 
       {/* Bento Grid financiero */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:gap-6">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 md:gap-5">
         {metricas.map((m) => (
-          <Card key={m.label} className={cn('border-l-4 p-5', m.accent)}>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-muted-foreground">{m.label}</span>
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60">
-                <m.icon className="h-4 w-4 text-foreground" />
+          <Card key={m.label} className="relative overflow-hidden">
+            <div className={cn('absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r', m.gradient)} />
+            <CardContent className="p-4 md:p-5">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">{m.label}</span>
+                <div className={cn('flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-lg', m.iconBg)}>
+                  <m.icon className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                </div>
               </div>
-            </div>
-            <p className="mt-3 font-mono text-2xl font-bold tracking-tight text-foreground">
-              {formatUsd(m.value)}
-            </p>
-            {tasaVes !== null && (
-              <p className="mt-0.5 font-mono text-xs text-muted-foreground">
-                {formatVes(m.value, tasaVes)}
+              <p className="mt-2 font-mono text-xl md:text-2xl font-bold tracking-tight text-foreground">
+                {formatUsd(m.value)}
               </p>
-            )}
-            <p className="mt-1 text-xs text-muted-foreground">{m.sublabel}</p>
+              {tasaVes !== null && (
+                <p className="mt-0.5 font-mono text-xs text-muted-foreground">
+                  {formatVes(m.value, tasaVes)}
+                </p>
+              )}
+              <p className="mt-1 text-xs text-muted-foreground">{m.sublabel}</p>
+            </CardContent>
           </Card>
         ))}
       </div>

@@ -278,103 +278,129 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
   const valorTotalInventario = productos.reduce((acc, p) => acc + p.stock * p.precio_usd, 0)
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* ─── Encabezado y Acciones Principales ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-foreground text-background">
-              <Boxes className="h-5 w-5" />
-            </span>
-            <h2 className="text-2xl font-bold tracking-tight text-foreground">Inventario General</h2>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+            <Boxes className="h-5 w-5" />
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Catálogo de libros y stock físico disponible en bodega central.
-          </p>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Inventario General
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Catálogo de libros y stock físico disponible en bodega central.
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
           <Link href="/inventario/registros">
-            <Button variant="outline" size="sm">
+            <Button variant="outline" size="md" className="h-10 px-3.5 rounded-xl text-xs font-semibold">
               <History className="mr-1.5 h-4 w-4" />
-              Historial de Movimientos
+              Historial
             </Button>
           </Link>
-          <Button variant="outline" size="sm" onClick={() => abrirCargarStock()}>
+          <Button variant="outline" size="md" onClick={() => abrirCargarStock()} className="h-10 px-3.5 rounded-xl text-xs font-semibold">
             <PackagePlus className="mr-1.5 h-4 w-4" />
             Entrada de Stock
           </Button>
-          <Button variant="primary" size="sm" onClick={abrirCrearProducto}>
+          <Button variant="primary" size="md" onClick={abrirCrearProducto} className="h-10 px-4 rounded-xl text-xs font-semibold shadow-xs">
             <Plus className="mr-1.5 h-4 w-4" />
-            Nuevo Libro / Producto
+            Nuevo Producto
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground uppercase">Títulos / Productos</p>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
+      {/* ─── Tarjetas de Métricas de Inventario (Grid 2x2 en móvil / 4 cols en desktop) ─── */}
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-5">
+        {/* Títulos */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-slate-400 to-slate-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Títulos
+              </span>
+              <div className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+                <BookOpen className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              </div>
             </div>
-            <p className="mt-2 font-mono text-2xl font-bold text-foreground">{totalItems}</p>
-            <p className="mt-1 text-xs text-muted-foreground">Activos en catálogo</p>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{totalItems}</p>
+            <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">Activos en catálogo</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground uppercase">Stock Total en Bodega</p>
-              <Boxes className="h-4 w-4 text-muted-foreground" />
+        {/* Stock Total */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-sky-400 to-sky-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Stock Total
+              </span>
+              <div className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600 dark:bg-sky-500/10 dark:text-sky-400">
+                <Boxes className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              </div>
             </div>
-            <p className="mt-2 font-mono text-2xl font-bold text-foreground">{totalUnidades} uds.</p>
-            <p className="mt-1 text-xs text-muted-foreground">Disponibles para venta/muestras</p>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{totalUnidades}</p>
+            <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">Uds. disponibles</p>
           </CardContent>
         </Card>
 
-        <Card className={cn(productosBajoStock > 0 ? 'border-amber-500/50 bg-amber-500/5' : '')}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground uppercase">Stock Bajo</p>
-              <AlertTriangle className={cn('h-4 w-4', productosBajoStock > 0 ? 'text-amber-600' : 'text-muted-foreground')} />
+        {/* Stock Bajo */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-amber-400 to-amber-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Stock Bajo
+              </span>
+              <div className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-600 dark:bg-amber-500/10 dark:text-amber-400">
+                <AlertTriangle className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              </div>
             </div>
-            <div className="mt-2 flex items-baseline gap-2">
-              <span className="font-mono text-2xl font-bold text-foreground">{productosBajoStock}</span>
-              {productosBajoStock > 0 && <Badge variant="warning">Por reponer</Badge>}
-            </div>
-            <p className="mt-1 text-xs text-muted-foreground">Por debajo del stock mínimo</p>
+            <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{productosBajoStock}</p>
+            <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">Por debajo del mínimo</p>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <p className="text-xs font-medium text-muted-foreground uppercase">Valor del Inventario</p>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
+        {/* Valor Total */}
+        <Card className="relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-emerald-400 to-emerald-500" />
+          <CardContent className="p-4 md:p-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Valor Total
+              </span>
+              <div className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400">
+                <DollarSign className="h-3.5 w-3.5 md:h-4 md:w-4" />
+              </div>
             </div>
-            <p className="mt-2 font-mono text-2xl font-bold text-foreground">{formatUsd(valorTotalInventario)}</p>
-            <p className="mt-1 text-xs text-muted-foreground">A precio de venta actual</p>
+            <p className="font-mono text-xl md:text-2xl font-bold tracking-tight text-foreground">{formatUsd(valorTotalInventario)}</p>
+            <p className="text-[11px] md:text-xs text-muted-foreground mt-0.5">Precio USD base</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4 items-start">
+      {/* ─── Grid de Filtros y Tabla ─── */}
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-4 items-start">
         {/* Panel de Filtros a la Izquierda */}
         <div className="space-y-4 lg:col-span-1">
-          <Card className="p-4">
+          <Card className="p-4 md:p-5">
             <div className="flex items-center justify-between border-b border-border/60 pb-3 mb-4">
-              <h3 className="font-bold text-sm text-foreground">Filtros</h3>
+              <h3 className="font-bold text-sm text-foreground">Filtros de Catálogo</h3>
               <button
                 type="button"
                 onClick={limpiarFiltros}
                 className="text-xs text-primary-accent hover:underline font-semibold"
               >
-                Limpiar filtros
+                Limpiar
               </button>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3.5">
               <label className="flex items-center justify-between gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
                 <span>Ocultar productos agotados</span>
                 <input
@@ -386,7 +412,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
               </label>
 
               <label className="flex items-center justify-between gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-                <span>Mostrar inventario bajo</span>
+                <span>Mostrar solo stock bajo</span>
                 <input
                   type="checkbox"
                   checked={mostrarBajoStock}
@@ -396,7 +422,7 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
               </label>
 
               <label className="flex items-center justify-between gap-3 text-xs text-muted-foreground hover:text-foreground cursor-pointer transition-colors">
-                <span>Mostrar ubicación</span>
+                <span>Mostrar ubicación de almacén</span>
                 <input
                   type="checkbox"
                   checked={mostrarUbicacion}
@@ -421,13 +447,13 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
         {/* Tabla y Buscador a la Derecha */}
         <div className="lg:col-span-3 space-y-4">
           <div className="relative w-full">
-            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground/60" />
+            <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="search"
               placeholder="Buscar por título, SKU o autor..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full rounded-xl border border-border bg-card py-3.5 pl-12 pr-5 text-sm placeholder:text-muted-foreground/50 focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
+              className="h-11 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs md:text-sm placeholder:text-muted-foreground focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
             />
           </div>
 
@@ -435,110 +461,110 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
 
           {cargando && productos.length === 0 ? (
             <div className="flex items-center justify-center py-16">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/20 border-t-foreground" />
+              <div className="h-8 w-8 animate-spin rounded-full border-3 border-muted-foreground/20 border-t-foreground" />
             </div>
           ) : productosFiltrados.length === 0 ? (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-16">
-                <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/40" />
-                <p className="font-medium text-foreground">No hay libros registrados en el inventario.</p>
+              <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                <BookOpen className="mb-3 h-12 w-12 text-muted-foreground/30" />
+                <p className="font-semibold text-foreground">No hay libros registrados en el inventario.</p>
+                <p className="text-xs text-muted-foreground mt-1">Crea tu primer producto con el botón superior.</p>
               </CardContent>
             </Card>
           ) : (
-            <Card>
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b border-border text-left">
-                        <th className="px-4 py-3 font-medium text-muted-foreground">SKU / Código</th>
-                        <th className="px-4 py-3 font-medium text-muted-foreground">Título / Producto</th>
-                        {mostrarPrecio && (
-                          <th className="px-4 py-3 font-medium text-muted-foreground">Precio USD</th>
-                        )}
-                        <th className="px-4 py-3 font-medium text-muted-foreground">Stock Disponible</th>
-                        <th className="hidden px-4 py-3 font-medium text-muted-foreground md:table-cell">Valor en Stock</th>
-                        {mostrarUbicacion && (
-                          <th className="px-4 py-3 font-medium text-muted-foreground">Ubicación</th>
-                        )}
-                        <th className="hidden px-4 py-3 font-medium text-muted-foreground sm:table-cell">Mínimo</th>
-                        <th className="px-4 py-3 text-right font-medium text-muted-foreground">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {productosFiltrados.map((p) => {
-                        const bajo = p.stock <= p.stock_minimo
-                        const valorTotal = p.valor_total_usd ?? (p.stock * p.precio_usd)
-                        return (
-                          <tr
-                            key={p.id}
-                            className="border-b border-border/50 last:border-0 hover:bg-muted/30 transition-colors"
-                          >
-                            <td className="px-4 py-3 font-mono text-xs font-medium text-foreground">
-                              {p.codigo_sku}
+            <Card className="overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-border bg-muted/20">
+                      <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">SKU / Código</th>
+                      <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Título / Producto</th>
+                      {mostrarPrecio && (
+                        <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Precio USD</th>
+                      )}
+                      <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Stock</th>
+                      <th className="hidden px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:table-cell">Valor Total</th>
+                      {mostrarUbicacion && (
+                        <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Ubicación</th>
+                      )}
+                      <th className="hidden px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground sm:table-cell">Mínimo</th>
+                      <th className="px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/50">
+                    {productosFiltrados.map((p) => {
+                      const bajo = p.stock <= p.stock_minimo
+                      const valorTotal = p.valor_total_usd ?? (p.stock * p.precio_usd)
+                      return (
+                        <tr
+                          key={p.id}
+                          className="hover:bg-muted/30 transition-colors"
+                        >
+                          <td className="px-4 py-3.5 font-mono text-xs font-medium text-foreground">
+                            {p.codigo_sku}
+                          </td>
+                          <td className="px-4 py-3.5">
+                            <p className="font-semibold text-foreground">{p.nombre}</p>
+                            {p.descripcion && (
+                              <p className="text-xs text-muted-foreground truncate max-w-xs">{p.descripcion}</p>
+                            )}
+                          </td>
+                          {mostrarPrecio && (
+                            <td className="px-4 py-3.5 font-mono font-medium text-foreground">
+                              {formatUsd(p.precio_usd)}
                             </td>
-                            <td className="px-4 py-3">
-                              <p className="font-semibold text-foreground">{p.nombre}</p>
-                              {p.descripcion && (
-                                <p className="text-xs text-muted-foreground truncate max-w-xs">{p.descripcion}</p>
+                          )}
+                          <td className="px-4 py-3.5 font-mono">
+                            <div className="flex items-center gap-2">
+                              <span className={cn('font-bold text-sm md:text-base', bajo ? 'text-amber-600 dark:text-amber-400' : 'text-foreground')}>
+                                {p.stock}
+                              </span>
+                              {bajo && (
+                                <Badge variant="warning" className="text-[10px] px-1.5 py-0">
+                                  Bajo
+                                </Badge>
                               )}
+                            </div>
+                          </td>
+                          <td className="hidden px-4 py-3.5 font-mono text-xs text-muted-foreground md:table-cell">
+                            {formatUsd(valorTotal)}
+                          </td>
+                          {mostrarUbicacion && (
+                            <td className="px-4 py-3.5 text-xs text-muted-foreground font-mono">
+                              Bodega Central (Estante {p.codigo_sku.slice(-2)})
                             </td>
-                            {mostrarPrecio && (
-                              <td className="px-4 py-3 font-mono font-medium text-foreground">
-                                {formatUsd(p.precio_usd)}
-                              </td>
-                            )}
-                            <td className="px-4 py-3 font-mono">
-                              <div className="flex items-center gap-2">
-                                <span className={cn('font-bold text-base', bajo ? 'text-amber-600' : 'text-foreground')}>
-                                  {p.stock}
-                                </span>
-                                {bajo && (
-                                  <Badge variant="warning" className="text-[10px] px-1.5 py-0">
-                                    Bajo
-                                  </Badge>
-                                )}
-                              </div>
-                            </td>
-                            <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground md:table-cell">
-                              {formatUsd(valorTotal)}
-                            </td>
-                            {mostrarUbicacion && (
-                              <td className="px-4 py-3 text-xs text-muted-foreground font-mono">
-                                Bodega Central (Estante {p.codigo_sku.slice(-2)})
-                              </td>
-                            )}
-                            <td className="hidden px-4 py-3 font-mono text-xs text-muted-foreground sm:table-cell">
-                              {p.stock_minimo} uds.
-                            </td>
-                            <td className="px-4 py-3 text-right">
-                              <div className="flex items-center justify-end gap-1">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  className="h-8 px-2.5 text-xs"
-                                  onClick={() => abrirCargarStock(p)}
-                                >
-                                  <PackagePlus className="mr-1 h-3.5 w-3.5" />
-                                  Stock
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0"
-                                  onClick={() => abrirEditarProducto(p)}
-                                >
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
+                          )}
+                          <td className="hidden px-4 py-3.5 font-mono text-xs text-muted-foreground sm:table-cell">
+                            {p.stock_minimo} uds.
+                          </td>
+                          <td className="px-4 py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-1.5">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-2.5 text-xs rounded-lg"
+                                onClick={() => abrirCargarStock(p)}
+                                title="Entrada / Ajuste de Stock"
+                              >
+                                <PackagePlus className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-2.5 text-xs rounded-lg"
+                                onClick={() => abrirEditarProducto(p)}
+                                title="Editar Libro"
+                              >
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </Card>
           )}
         </div>

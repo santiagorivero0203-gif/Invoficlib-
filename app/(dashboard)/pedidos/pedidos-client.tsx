@@ -14,6 +14,7 @@ import {
   ShieldAlert,
   X,
   FileText,
+  ShoppingCart,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -277,22 +278,36 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
 
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
-      {/* Encabezado */}
+      {/* ─── Encabezado y Acciones ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Pedidos</h2>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            Listado e historial de ventas directas realizadas, devoluciones y auditoría.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+            <ShoppingCart className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Pedidos y Ventas
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Listado e historial de ventas directas realizadas, devoluciones y auditoría.
+            </p>
+          </div>
         </div>
+
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={cargarNotas} disabled={cargando}>
-            <RotateCcw className={cn('h-3.5 w-3.5', cargando && 'animate-spin')} />
+          <Button
+            variant="outline"
+            size="md"
+            onClick={cargarNotas}
+            disabled={cargando}
+            className="h-10 px-3.5 rounded-xl text-xs font-semibold"
+          >
+            <RotateCcw className={cn('mr-1.5 h-3.5 w-3.5', cargando && 'animate-spin')} />
             Actualizar
           </Button>
           <Link href="/vender">
-            <Button variant="primary" size="sm">
-              <Plus className="h-4 w-4" />
+            <Button variant="primary" size="md" className="h-10 px-4 rounded-xl text-xs font-semibold shadow-xs">
+              <Plus className="mr-1.5 h-4 w-4" />
               Nueva Venta
             </Button>
           </Link>
@@ -301,8 +316,8 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
 
       {error && <ErrorMessage message={error} />}
 
-      {/* Barra de Filtros y Búsqueda */}
-      <Card className="p-4">
+      {/* ─── Barra de Filtros y Búsqueda (h-10 homogénea) ─── */}
+      <Card className="p-3.5 md:p-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           {/* Input de Búsqueda */}
           <div className="relative flex-1">
@@ -312,7 +327,7 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
               placeholder="Buscar por correlativo (#00001) o cliente..."
               value={busqueda}
               onChange={(e) => setBusqueda(e.target.value)}
-              className="w-full rounded-xl border border-border bg-muted/30 pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
+              className="h-10 w-full rounded-xl border border-border bg-card pl-10 pr-9 text-xs md:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
             />
             {busqueda && (
               <button
@@ -327,39 +342,56 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
 
           {/* Filtros de Fecha Rápidos */}
           <div className="flex flex-wrap items-center gap-1.5">
-            <Button
-              variant={filtroFecha === 'todos' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => {
-                setFiltroFecha('todos')
-                setFechaEspecifica('')
-              }}
-            >
-              Todos
-            </Button>
-            <Button
-              variant={filtroFecha === 'hoy' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => {
-                setFiltroFecha('hoy')
-                setFechaEspecifica('')
-              }}
-            >
-              Hoy
-            </Button>
-            <Button
-              variant={filtroFecha === 'semana' ? 'primary' : 'ghost'}
-              size="sm"
-              onClick={() => {
-                setFiltroFecha('semana')
-                setFechaEspecifica('')
-              }}
-            >
-              Esta Semana
-            </Button>
+            <div className="flex h-10 items-center gap-1 rounded-xl border border-border bg-muted/40 p-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setFiltroFecha('todos')
+                  setFechaEspecifica('')
+                }}
+                className={cn(
+                  'h-full rounded-lg px-3 text-xs font-medium transition-all',
+                  filtroFecha === 'todos'
+                    ? 'bg-card text-foreground font-semibold shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Todos
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFiltroFecha('hoy')
+                  setFechaEspecifica('')
+                }}
+                className={cn(
+                  'h-full rounded-lg px-3 text-xs font-medium transition-all',
+                  filtroFecha === 'hoy'
+                    ? 'bg-card text-foreground font-semibold shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Hoy
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setFiltroFecha('semana')
+                  setFechaEspecifica('')
+                }}
+                className={cn(
+                  'h-full rounded-lg px-3 text-xs font-medium transition-all',
+                  filtroFecha === 'semana'
+                    ? 'bg-card text-foreground font-semibold shadow-xs'
+                    : 'text-muted-foreground hover:text-foreground'
+                )}
+              >
+                Esta Semana
+              </button>
+            </div>
 
             {/* Selector de Fecha Específica (Mini Calendario) */}
-            <div className="flex items-center gap-1.5 rounded-xl border border-border bg-muted/30 px-2.5 py-1">
+            <div className="flex h-10 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs">
               <CalendarIcon className="h-3.5 w-3.5 text-muted-foreground" />
               <input
                 type="date"
@@ -375,33 +407,32 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
         </div>
       </Card>
 
-      {/* Tabla de Pedidos */}
-      <Card>
-        <CardContent className="p-0">
-          {cargando && notas.length === 0 ? (
-            <div className="flex items-center justify-center py-16">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-muted-foreground/20 border-t-foreground" />
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border text-left">
-                    <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Correlativo</th>
-                    <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Cliente</th>
-                    <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Estado</th>
-                    <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground">Fecha y Hora</th>
-                    <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground text-right">Subtotal</th>
-                    <th className="px-4 py-3 font-semibold text-xs uppercase tracking-wider text-muted-foreground text-right">Total</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {notasFiltradas.map((nota) => (
-                    <tr
-                      key={nota.id}
-                      onClick={() => abrirDetalle(nota)}
-                      className="border-b border-border/50 last:border-0 hover:bg-muted/40 cursor-pointer transition-colors"
-                    >
+      {/* ─── Tabla de Pedidos ─── */}
+      <Card className="overflow-hidden">
+        {cargando && notas.length === 0 ? (
+          <div className="flex items-center justify-center py-16">
+            <div className="h-8 w-8 animate-spin rounded-full border-3 border-muted-foreground/20 border-t-foreground" />
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-border bg-muted/20">
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Correlativo</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Cliente</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Estado</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fecha y Hora</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Subtotal</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground text-right">Total</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {notasFiltradas.map((nota) => (
+                  <tr
+                    key={nota.id}
+                    onClick={() => abrirDetalle(nota)}
+                    className="hover:bg-muted/30 cursor-pointer transition-colors"
+                  >
                       <td className="px-4 py-3.5 font-mono font-semibold text-foreground">
                         <div className="flex items-center gap-1.5">
                           <FileText className="h-3.5 w-3.5 text-muted-foreground" />
@@ -446,8 +477,7 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
               </table>
             </div>
           )}
-        </CardContent>
-      </Card>
+        </Card>
 
       {/* Drawer detalle de nota */}
       <Drawer

@@ -63,17 +63,21 @@ export default function UtilidadPerdidaClient({ initialData }: UtilidadPerdidaCl
   }, [data.capital])
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
-      {/* Encabezado y Filtros */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-5">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-            <TrendingUp className="h-4 w-4 text-primary-accent" />
-            <span>Resumen Financiero</span>
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* ─── Encabezado y Filtros ─── */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+            <TrendingUp className="h-5 w-5" />
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground mt-1">
-            Utilidad / Pérdida
-          </h2>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Utilidad y Pérdida
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Análisis financiero de ingresos, costos, margen neto y desglose de capital.
+            </p>
+          </div>
         </div>
 
         {/* Selectores de Período */}

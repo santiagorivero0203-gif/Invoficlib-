@@ -166,57 +166,77 @@ export default function ClientesClient({ initialClientes }: ClientesClientProps)
   )
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
+      {/* ─── Encabezado y Acciones ─── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight text-foreground">Clientes</h2>
-          <p className="text-muted-foreground text-sm">
-            Gestiona tu base de clientes: colegios, vendedores y público general.
-          </p>
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 md:h-11 md:w-11 items-center justify-center rounded-2xl bg-foreground text-background shadow-xs shrink-0">
+            <Users className="h-5 w-5" />
+          </div>
+          <div>
+            <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">
+              Directorio de Clientes
+            </h2>
+            <p className="text-xs md:text-sm text-muted-foreground mt-0.5">
+              Gestiona tu base de colegios, docentes, librerías y consumidores finales.
+            </p>
+          </div>
         </div>
-        <Button variant="primary" onClick={abrirCrear}>
-          <Plus className="mr-2 h-4 w-4" />
-          Nuevo Cliente
-        </Button>
+
+        <div className="flex items-center gap-2">
+          <Button variant="primary" size="md" onClick={abrirCrear} className="h-10 px-4 rounded-xl text-xs font-semibold shadow-xs">
+            <Plus className="mr-1.5 h-4 w-4" />
+            Nuevo Cliente
+          </Button>
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      {/* ─── Tarjetas de Métricas de Clientes ─── */}
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 md:gap-5">
+        {(['colegio', 'vendedor', 'general'] as TipoCliente[]).map((tipo) => {
+          const config = tipoClienteConfig[tipo]
+          const cantidad = clientes.filter((c) => c.tipo === tipo).length
+          const IconComp = config.icon
+          const gradientClass = tipo === 'colegio' ? 'from-blue-400 to-blue-500' : tipo === 'vendedor' ? 'from-cyan-400 to-cyan-500' : 'from-purple-400 to-purple-500'
+          const bgIconClass = tipo === 'colegio' ? 'bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400' : tipo === 'vendedor' ? 'bg-cyan-50 text-cyan-600 dark:bg-cyan-500/10 dark:text-cyan-400' : 'bg-purple-50 text-purple-600 dark:bg-purple-500/10 dark:text-purple-400'
+
+          return (
+            <Card key={tipo} className="relative overflow-hidden">
+              <div className={cn('absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r', gradientClass)} />
+              <CardContent className="p-4 md:p-5">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-[11px] md:text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                    {config.label}s
+                  </span>
+                  <div className={cn('flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-lg', bgIconClass)}>
+                    <IconComp className="h-3.5 w-3.5 md:h-4 md:w-4" />
+                  </div>
+                </div>
+                <p className="font-mono text-2xl md:text-3xl font-bold tracking-tight text-foreground">{cantidad}</p>
+                <p className="mt-1 text-xs text-muted-foreground">Registrados en el sistema</p>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+
+      {/* ─── Toolbar de Filtros y Búsqueda (h-10 homogénea) ─── */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <Tabs
           tabs={tabsFiltro}
           activeId={filtroTipo}
           onChange={setFiltroTipo}
         />
         <div className="relative flex-1 sm:max-w-xs">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
             placeholder="Buscar por nombre, contacto..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
+            className="h-10 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20 transition-all"
           />
         </div>
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        {(['colegio', 'vendedor', 'general'] as TipoCliente[]).map((tipo) => {
-          const config = tipoClienteConfig[tipo]
-          const cantidad = clientes.filter((c) => c.tipo === tipo).length
-          const IconComp = config.icon
-          return (
-            <Card key={tipo}>
-              <CardContent className="flex items-center gap-4 p-4">
-                <div className="rounded-xl bg-muted/60 p-3">
-                  <IconComp className="h-5 w-5 text-muted-foreground" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">{config.label}s</p>
-                  <p className="text-2xl font-bold text-foreground">{cantidad}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )
-        })}
       </div>
 
       {error && <ErrorMessage message={error} />}
