@@ -12,6 +12,7 @@ import {
   DollarSign,
   PackagePlus,
   History,
+  Download,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -277,6 +278,45 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
   const productosBajoStock = productos.filter((p) => p.stock <= p.stock_minimo).length
   const valorTotalInventario = productos.reduce((acc, p) => acc + p.stock * p.precio_usd, 0)
 
+  // Exportar catálogo completo valorizado a CSV
+  const handleExportarInventarioCSV = () => {
+    if (productos.length === 0) return
+
+    const headers = [
+      'Codigo SKU',
+      'Titulo / Nombre',
+      'Descripcion',
+      'Stock Actual',
+      'Stock Minimo',
+      'Precio Unitario USD',
+      'Valor Total USD',
+      'Estado',
+    ]
+
+    const rows = productos.map((p) => [
+      p.codigo_sku,
+      `"${p.nombre}"`,
+      `"${p.descripcion || ''}"`,
+      p.stock,
+      p.stock_minimo,
+      p.precio_usd.toFixed(2),
+      (p.stock * p.precio_usd).toFixed(2),
+      p.estado ? 'Activo' : 'Inactivo',
+    ])
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
+
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `inventario_valorizado_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       {/* ─── Encabezado y Acciones Principales ─── */}
@@ -296,6 +336,10 @@ export default function InventarioClient({ initialProductos }: InventarioClientP
         </div>
 
         <div className="flex items-center gap-2 flex-wrap">
+          <Button variant="outline" size="md" onClick={handleExportarInventarioCSV} className="h-10 px-3.5 rounded-xl text-xs font-semibold">
+            <Download className="mr-1.5 h-4 w-4" />
+            Exportar CSV
+          </Button>
           <Link href="/inventario/registros">
             <Button variant="outline" size="md" className="h-10 px-3.5 rounded-xl text-xs font-semibold">
               <History className="mr-1.5 h-4 w-4" />

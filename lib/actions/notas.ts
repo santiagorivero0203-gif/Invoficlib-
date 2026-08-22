@@ -374,3 +374,35 @@ export async function eliminarNota(notaId: string) {
     .eq('id', notaId)
 }
 
+/**
+ * Actualiza el estado de múltiples notas en lote (Bulk Action).
+ *
+ * @param notaIds     - Array de UUIDs de notas a actualizar.
+ * @param nuevoEstado - Nuevo estado ('pagada' | 'parcial' | 'anulada').
+ */
+export async function actualizarEstadoNotasEnLote(
+  notaIds: string[],
+  nuevoEstado: 'pagada' | 'parcial' | 'anulada'
+): Promise<{ count: number; error: unknown }> {
+  if (!notaIds || notaIds.length === 0) {
+    return { count: 0, error: null }
+  }
+
+  const supabase = createClient()
+
+  const { error, data } = await supabase
+    .from('notas')
+    .update({
+      estado: nuevoEstado,
+      fecha_actualizacion: new Date().toISOString(),
+    })
+    .in('id', notaIds)
+    .select('id')
+
+  return {
+    count: data ? data.length : 0,
+    error,
+  }
+}
+
+

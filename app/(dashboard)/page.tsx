@@ -98,6 +98,29 @@ export default async function DashboardHome() {
   const agotados = productos.filter(p => p.stock === 0)
   const stockBajo = alertasStock.filter(p => p.stock > 0)
 
+  // Top Productos Más Vendidos (agrupando salidas del ledger)
+  const ventasPorProducto = new Map<string, { nombre: string; sku: string; unidades: number; totalUsd: number }>()
+  for (const m of movimientos) {
+    if (m.tipo === 'salida' && m.productos) {
+      const sku = m.productos.codigo_sku
+      const actual = ventasPorProducto.get(sku) || {
+        nombre: m.productos.nombre,
+        sku: m.productos.codigo_sku,
+        unidades: 0,
+        totalUsd: 0,
+      }
+      actual.unidades += m.cantidad
+      actual.totalUsd += m.cantidad * (m.productos.precio_usd || 0)
+      ventasPorProducto.set(sku, actual)
+    }
+  }
+
+  const topVendidos = Array.from(ventasPorProducto.values())
+    .sort((a, b) => b.unidades - a.unidades)
+    .slice(0, 4)
+
+  const maxUnidadesVendidas = topVendidos.length > 0 ? Math.max(...topVendidos.map(t => t.unidades)) : 1
+
   // Últimos movimientos
   const movimientosRecientes = movimientos.slice(0, 5)
 
@@ -229,8 +252,59 @@ export default async function DashboardHome() {
         </Card>
       )}
 
-      {/* ═══ SECCIONES SECUNDARIAS ═══ */}
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2 md:gap-5">
+      {/* ═══ SECCIONES SECUNDARIAS ANALÍTICAS ═══ */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:gap-5">
+        {/* Productos Más Vendidos */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="md:text-base">Más Vendidos</CardTitle>
+              <span className="rounded-full border border-border bg-muted/50 px-2 py-0.5 font-mono text-[9px] md:text-[10px] uppercase tracking-wider text-muted-foreground font-medium">
+                Top Salidas
+              </span>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {topVendidos.length === 0 ? (
+              <div className="py-6 md:py-8 text-center text-xs text-muted-foreground">
+                <Clock className="mx-auto h-6 w-6 md:h-8 md:w-8 opacity-30 mb-1.5" />
+                Sin ventas registradas aún.
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {topVendidos.map((prod) => {
+                  const pct = Math.min(100, Math.round((prod.unidades / maxUnidadesVendidas) * 100))
+
+                  return (
+                    <div key={prod.sku} className="space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <div className="min-w-0 flex-1 truncate pr-2">
+                          <span className="font-mono text-[10px] text-muted-foreground mr-1.5">
+                            {prod.sku}
+                          </span>
+                          <span className="font-semibold text-foreground truncate">
+                            {prod.nombre}
+                          </span>
+                        </div>
+                        <div className="text-right shrink-0">
+                          <span className="font-mono font-bold text-foreground">{prod.unidades} uds</span>
+                          <span className="text-[10px] text-muted-foreground ml-1.5">({formatUsd(prod.totalUsd)})</span>
+                        </div>
+                      </div>
+                      <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted/60">
+                        <div
+                          className="h-full rounded-full bg-gradient-to-r from-primary-accent to-violet-500 transition-all duration-500"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         {/* Últimos Movimientos */}
         <Card>
           <CardHeader>

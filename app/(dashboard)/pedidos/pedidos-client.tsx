@@ -15,6 +15,10 @@ import {
   X,
   FileText,
   ShoppingCart,
+  CheckCircle2,
+  Download,
+  CheckSquare,
+  Square,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -28,6 +32,7 @@ import {
   getNotaCompleta,
   crearDevolucion,
   anularNotaCompleta,
+  actualizarEstadoNotasEnLote,
   type Nota,
   type NotaCompleta,
   type DetalleNota,
@@ -276,6 +281,94 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
     })
   }, [notas, busqueda, filtroFecha, fechaEspecifica])
 
+  // Selección múltiple para Acciones por Lote (Bulk Actions)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [actualizandoLote, setActualizandoLote] = useState(false)
+  const [mensajeLote, setMensajeLote] = useState<string | null>(null)
+
+  // Toggle selección individual
+  const toggleSelect = (id: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
+  }
+
+  // Toggle seleccionar todos los filtrados
+  const toggleSelectAll = () => {
+    if (selectedIds.size === notasFiltradas.length && notasFiltradas.length > 0) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(notasFiltradas.map((n) => n.id)))
+    }
+  }
+
+  // Actualizar estado masivo
+  const handleBulkActualizarEstado = async (nuevoEstado: 'pagada' | 'parcial') => {
+    if (selectedIds.size === 0 || actualizandoLote) return
+    setActualizandoLote(true)
+    setMensajeLote(null)
+
+    const idsArray = Array.from(selectedIds)
+    const { count, error: errBulk } = await actualizarEstadoNotasEnLote(idsArray, nuevoEstado)
+    setActualizandoLote(false)
+
+    if (errBulk) {
+      setError(errorMessage(errBulk))
+    } else {
+      setMensajeLote(`${count} notas actualizadas a "${nuevoEstado}". ✓`)
+      setTimeout(() => setMensajeLote(null), 3000)
+      setSelectedIds(new Set())
+      cargarNotas()
+    }
+  }
+
+  // Exportar seleccionados a CSV
+  const handleBulkExportCSV = () => {
+    const notasAExportar = notas.filter((n) => selectedIds.has(n.id))
+    if (notasAExportar.length === 0) return
+
+    const headers = [
+      'Correlativo',
+      'Cliente',
+      'Estado',
+      'Tipo Salida',
+      'Fecha',
+      'Subtotal USD',
+      'Total USD',
+      'Observaciones',
+    ]
+
+    const rows = notasAExportar.map((n) => [
+      n.correlativo,
+      `"${n.cliente_nombre}"`,
+      n.estado,
+      n.tipo_salida,
+      formatDate(n.fecha_creacion),
+      n.subtotal_usd.toFixed(2),
+      n.total_usd.toFixed(2),
+      `"${n.observaciones || ''}"`,
+    ])
+
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n')
+
+    const encodedUri = encodeURI(csvContent)
+    const link = document.createElement('a')
+    link.setAttribute('href', encodedUri)
+    link.setAttribute('download', `pedidos_seleccionados_${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   return (
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       {/* ─── Encabezado y Acciones ─── */}
@@ -418,6 +511,22 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border bg-muted/20">
+                  <th className="w-10 px-3 py-3.5 text-center">
+                    <button
+                      type="button"
+                      onClick={toggleSelectAll}
+                      className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                      title={selectedIds.size === notasFiltradas.length && notasFiltradas.length > 0 ? "Deseleccionar todos" : "Seleccionar todos"}
+                    >
+                      {selectedIds.size > 0 && selectedIds.size === notasFiltradas.length ? (
+                        <CheckSquare className="h-4 w-4 text-primary-accent" />
+                      ) : selectedIds.size > 0 ? (
+                        <CheckSquare className="h-4 w-4 text-primary-accent/70" />
+                      ) : (
+                        <Square className="h-4 w-4 text-muted-foreground/50" />
+                      )}
+                    </button>
+                  </th>
                   <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Correlativo</th>
                   <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Cliente</th>
                   <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Estado</th>
@@ -427,12 +536,30 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {notasFiltradas.map((nota) => (
-                  <tr
-                    key={nota.id}
-                    onClick={() => abrirDetalle(nota)}
-                    className="hover:bg-muted/30 cursor-pointer transition-colors"
-                  >
+                {notasFiltradas.map((nota) => {
+                  const isSelected = selectedIds.has(nota.id)
+
+                  return (
+                    <tr
+                      key={nota.id}
+                      onClick={() => abrirDetalle(nota)}
+                      className={cn(
+                        'hover:bg-muted/30 cursor-pointer transition-colors',
+                        isSelected && 'bg-primary-accent/5'
+                      )}
+                    >
+                      <td className="w-10 px-3 py-3.5 text-center" onClick={(e) => toggleSelect(nota.id, e)}>
+                        <button
+                          type="button"
+                          className="flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors mx-auto"
+                        >
+                          {isSelected ? (
+                            <CheckSquare className="h-4 w-4 text-primary-accent" />
+                          ) : (
+                            <Square className="h-4 w-4 text-muted-foreground/40" />
+                          )}
+                        </button>
+                      </td>
                       <td className="px-4 py-3.5 font-mono font-semibold text-foreground">
                         <div className="flex items-center gap-1.5">
                           <FileText className="h-3.5 w-3.5 text-muted-foreground" />
@@ -463,21 +590,71 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
                         {formatUsd(nota.total_usd)}
                       </td>
                     </tr>
-                  ))}
-                  {notasFiltradas.length === 0 && (
-                    <tr>
-                      <td colSpan={6} className="px-4 py-12 text-center text-sm text-muted-foreground">
-                        {busqueda || filtroFecha !== 'todos'
-                          ? 'No se encontraron pedidos con los filtros aplicados.'
-                          : 'Aún no hay notas emitidas. Crea la primera en /vender.'}
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </Card>
+                  )
+                })}
+                {notasFiltradas.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-4 py-12 text-center text-sm text-muted-foreground">
+                      {busqueda || filtroFecha !== 'todos'
+                        ? 'No se encontraron pedidos con los filtros aplicados.'
+                        : 'Aún no hay notas emitidas. Crea la primera en /vender.'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Card>
+
+      {/* ─── Barra Flotante de Acciones en Lote (Bulk Actions) ─── */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex flex-wrap items-center gap-2 sm:gap-3 rounded-2xl border border-border bg-card/95 backdrop-blur-md px-4 py-2.5 sm:px-5 sm:py-3 shadow-2xl animate-fade-in">
+          <span className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary-accent text-white text-[10px] font-bold">
+              {selectedIds.size}
+            </span>
+            <span className="hidden sm:inline">pedidos seleccionados</span>
+          </span>
+          <div className="h-4 w-px bg-border hidden sm:block" />
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={actualizandoLote}
+            onClick={() => handleBulkActualizarEstado('pagada')}
+            className="h-8 px-2.5 text-xs font-semibold text-emerald-600 dark:text-emerald-400 gap-1 rounded-xl"
+          >
+            <CheckCircle2 className="h-3.5 w-3.5" />
+            Marcar Pagadas
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={actualizandoLote}
+            onClick={handleBulkExportCSV}
+            className="h-8 px-2.5 text-xs font-semibold gap-1 rounded-xl"
+          >
+            <Download className="h-3.5 w-3.5" />
+            Exportar CSV
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setSelectedIds(new Set())}
+            className="h-8 w-8 p-0 rounded-xl text-muted-foreground hover:text-foreground"
+            title="Deseleccionar todos"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
+      {mensajeLote && (
+        <div className="fixed top-20 right-6 z-50 rounded-xl bg-emerald-600 text-white px-4 py-2.5 text-xs font-semibold shadow-lg animate-fade-in flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4" />
+          <span>{mensajeLote}</span>
+        </div>
+      )}
 
       {/* Drawer detalle de nota */}
       <Drawer
