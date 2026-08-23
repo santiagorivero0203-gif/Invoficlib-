@@ -242,16 +242,18 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
     cargarNotas()
   }
 
-  // Filtrado reactivo en memoria
+  // Filtrado reactivo en memoria (Calibrado con zona horaria local)
   const notasFiltradas = useMemo(() => {
     const ahora = new Date()
-    const hoyStr = ahora.toISOString().split('T')[0]
+    const hoyYear = ahora.getFullYear()
+    const hoyMonth = String(ahora.getMonth() + 1).padStart(2, '0')
+    const hoyDay = String(ahora.getDate()).padStart(2, '0')
+    const hoyLocalStr = `${hoyYear}-${hoyMonth}-${hoyDay}`
     
-    // Inicio de la semana (Lunes)
+    // Inicio de la semana (Lunes a las 00:00:00 local sin mutar ahora)
     const diaSemana = ahora.getDay()
     const diffLunes = ahora.getDate() - (diaSemana === 0 ? 6 : diaSemana - 1)
-    const lunes = new Date(ahora.setDate(diffLunes))
-    lunes.setHours(0, 0, 0, 0)
+    const lunes = new Date(ahora.getFullYear(), ahora.getMonth(), diffLunes, 0, 0, 0, 0)
 
     return notas.filter((nota) => {
       // 1. Filtro de búsqueda por texto
@@ -263,18 +265,21 @@ export default function PedidosClient({ initialNotas }: PedidosClientProps) {
 
       if (!coincideTexto) return false
 
-      // 2. Filtro de fecha
+      // 2. Filtro de fecha en zona horaria local
       const fechaNota = new Date(nota.fecha_creacion)
-      const fechaNotaStr = nota.fecha_creacion.split('T')[0]
+      const notaYear = fechaNota.getFullYear()
+      const notaMonth = String(fechaNota.getMonth() + 1).padStart(2, '0')
+      const notaDay = String(fechaNota.getDate()).padStart(2, '0')
+      const notaLocalStr = `${notaYear}-${notaMonth}-${notaDay}`
 
       if (filtroFecha === 'hoy') {
-        return fechaNotaStr === hoyStr
+        return notaLocalStr === hoyLocalStr
       }
       if (filtroFecha === 'semana') {
         return fechaNota >= lunes
       }
       if (filtroFecha === 'personalizado' && fechaEspecifica) {
-        return fechaNotaStr === fechaEspecifica
+        return notaLocalStr === fechaEspecifica
       }
 
       return true
