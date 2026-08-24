@@ -79,7 +79,16 @@ export default function ReportesClient({ initialData }: ReportesClientProps) {
     { id: 'inventario', label: 'Inventario' },
   ]
 
-  // Filtrado de pedidos
+  // Lista dinámica de usuarios creadores
+  const usuariosDisponibles = useMemo(() => {
+    const lista = new Set<string>()
+    data.pedidos.forEach((p) => {
+      if (p.creadoPor) lista.add(p.creadoPor)
+    })
+    return Array.from(lista)
+  }, [data.pedidos])
+
+  // Filtrado de pedidos por texto y por usuario
   const pedidosFiltrados = useMemo(() => {
     return data.pedidos.filter((p) => {
       const q = busqueda.toLowerCase().trim()
@@ -87,11 +96,15 @@ export default function ReportesClient({ initialData }: ReportesClientProps) {
         !q ||
         p.correlativo.toLowerCase().includes(q) ||
         p.cliente.toLowerCase().includes(q) ||
-        p.canal.toLowerCase().includes(q)
+        p.canal.toLowerCase().includes(q) ||
+        p.creadoPor.toLowerCase().includes(q)
 
-      return matchBusqueda
+      const matchUsuario =
+        usuarioSeleccionado === 'todos' || p.creadoPor === usuarioSeleccionado
+
+      return matchBusqueda && matchUsuario
     })
-  }, [data.pedidos, busqueda])
+  }, [data.pedidos, busqueda, usuarioSeleccionado])
 
   const totalPaginas = Math.ceil(pedidosFiltrados.length / itemsPorPagina) || 1
   const pedidosPaginados = useMemo(() => {
@@ -194,12 +207,18 @@ export default function ReportesClient({ initialData }: ReportesClientProps) {
                 <User className="h-3.5 w-3.5 text-muted-foreground" />
                 <select
                   value={usuarioSeleccionado}
-                  onChange={(e) => setUsuarioSeleccionado(e.target.value)}
+                  onChange={(e) => {
+                    setUsuarioSeleccionado(e.target.value)
+                    setPaginaActual(1)
+                  }}
                   className="w-full bg-transparent text-xs font-medium text-foreground focus:outline-none cursor-pointer"
                 >
                   <option value="todos">Todos los usuarios</option>
-                  <option value="maria">María Pérez (Secretaria)</option>
-                  <option value="admin">Administrador (Jefe)</option>
+                  {usuariosDisponibles.map((u) => (
+                    <option key={u} value={u}>
+                      {u}
+                    </option>
+                  ))}
                 </select>
               </div>
             </div>

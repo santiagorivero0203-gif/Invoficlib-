@@ -217,7 +217,22 @@ export async function getReporteFinanciero(filtros?: {
   try {
     let query = supabase
       .from('notas')
-      .select('id, correlativo, cliente_nombre, estado, total_usd, subtotal_usd, fecha_creacion, tipo_salida')
+      .select(`
+        id,
+        correlativo,
+        cliente_nombre,
+        estado,
+        total_usd,
+        subtotal_usd,
+        fecha_creacion,
+        tipo_salida,
+        usuario_id,
+        perfiles:usuario_id (
+          id,
+          nombre_completo,
+          rol
+        )
+      `)
       .order('fecha_creacion', { ascending: false })
 
     if (filtros?.fechaInicio) {
@@ -225,6 +240,9 @@ export async function getReporteFinanciero(filtros?: {
     }
     if (filtros?.fechaFin) {
       query = query.lte('fecha_creacion', new Date(filtros.fechaFin).toISOString())
+    }
+    if (filtros?.usuarioId && filtros.usuarioId !== 'todos') {
+      query = query.eq('usuario_id', filtros.usuarioId)
     }
 
     const { data: notas, error: errNotas } = await query
@@ -240,7 +258,7 @@ export async function getReporteFinanciero(filtros?: {
     }
     const { data: gastos } = await queryGastos
 
-    const listaNotas = notas ?? []
+    const listaNotas = (notas as any[]) ?? []
     const totalOrdenes = listaNotas.length
     const ingresos = listaNotas.reduce(
       (acc, n) => acc + (n.estado !== 'anulada' ? n.total_usd : 0),
@@ -260,6 +278,9 @@ export async function getReporteFinanciero(filtros?: {
             ? nota.total_usd * 0.5
             : 0
 
+      const perfil = Array.isArray(nota.perfiles) ? nota.perfiles[0] : nota.perfiles
+      const nombreCreador = perfil?.nombre_completo || 'Santiago Rivero'
+
       return {
         id: nota.id,
         correlativo: nota.correlativo,
@@ -271,7 +292,7 @@ export async function getReporteFinanciero(filtros?: {
               ? 'Consignación'
               : 'Promoción',
         fecha: nota.fecha_creacion,
-        creadoPor: 'Adriana Peña',
+        creadoPor: nombreCreador,
         metodoPago: 'Dólares',
         costoPedido: parseFloat(costo.toFixed(2)),
         facturacion: parseFloat(nota.total_usd.toFixed(2)),

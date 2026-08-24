@@ -163,10 +163,20 @@ export async function crearNota(
 ) {
   const supabase = createClient()
 
-  // 1. Insertar la cabecera y recuperar el id generado.
+  // Capturar usuario autenticado si no viene explícito
+  let usuarioId = nota.usuario_id
+  if (!usuarioId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    usuarioId = user?.id || null
+  }
+
+  // 1. Insertar la cabecera con el usuario_id real
   const { data: notaCreada, error: errorNota } = await supabase
     .from('notas')
-    .insert(nota)
+    .insert({
+      ...nota,
+      usuario_id: usuarioId,
+    })
     .select()
     .single()
 
