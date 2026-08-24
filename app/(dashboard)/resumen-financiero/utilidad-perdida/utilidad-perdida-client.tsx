@@ -13,7 +13,7 @@
  * -------------------------------------------------------
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import {
   TrendingUp,
   Wallet,
@@ -29,23 +29,45 @@ import { Card } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { formatUsd } from '@/lib/format'
 import { cn } from '@/lib/utils'
-import type { UtilidadPerdidaData } from '@/lib/actions/resumen-financiero'
+import { getUtilidadPerdida, type UtilidadPerdidaData } from '@/lib/actions/resumen-financiero'
 
 interface UtilidadPerdidaClientProps {
   initialData: UtilidadPerdidaData
 }
 
 export default function UtilidadPerdidaClient({ initialData }: UtilidadPerdidaClientProps) {
-  const [data] = useState<UtilidadPerdidaData>(initialData)
+  const [data, setData] = useState<UtilidadPerdidaData>(initialData)
   const [mesSeleccionado, setMesSeleccionado] = useState<string>('todos')
   const [anioSeleccionado, setAnioSeleccionado] = useState<number>(2026)
   const [hoveredBar, setHoveredBar] = useState<number | null>(null)
   const [hoveredSegment, setHoveredSegment] = useState<string | null>(null)
 
-  // Serie mensual normalizada para el gráfico
+  // Carga reactiva de datos al cambiar filtros
+  useEffect(() => {
+    let activo = true
+    async function cargar() {
+      const mesNum = mesSeleccionado === 'todos' ? undefined : parseInt(mesSeleccionado, 10)
+      const { data: res } = await getUtilidadPerdida(anioSeleccionado, mesNum)
+      if (activo && res) {
+        setData(res)
+      }
+    }
+    cargar()
+    return () => {
+      activo = false
+    }
+  }, [anioSeleccionado, mesSeleccionado])
+
+  // Serie mensual normalizada con escala adaptativa para el gráfico
   const maxIngreso = useMemo(() => {
-    const max = Math.max(...data.serieMensual.map((m) => Math.max(m.ingresos, m.utilidadNeta)), 1000)
-    return Math.ceil(max / 10000) * 10000 || 50000
+    const maxVal = Math.max(
+      ...data.serieMensual.map((m) => Math.max(m.ingresos, m.utilidadNeta)),
+      100
+    )
+    if (maxVal <= 500) return 500
+    if (maxVal <= 2000) return 2000
+    if (maxVal <= 10000) return 10000
+    return Math.ceil(maxVal / 5000) * 5000
   }, [data.serieMensual])
 
   // Distribución de Activos para el Gráfico de Dona
@@ -226,12 +248,12 @@ export default function UtilidadPerdidaClient({ initialData }: UtilidadPerdidaCl
               <line x1="40" y1="185" x2="980" y2="185" stroke="currentColor" strokeOpacity="0.08" strokeDasharray="4 4" />
               <line x1="40" y1="210" x2="980" y2="210" stroke="currentColor" strokeOpacity="0.2" />
 
-              {/* Etiquetas Eje Y */}
-              <text x="30" y="25" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">$50K</text>
-              <text x="30" y="80" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">$35K</text>
-              <text x="30" y="135" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">$20K</text>
-              <text x="30" y="190" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">$5K</text>
-              <text x="30" y="214" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">$0K</text>
+              {/* Etiquetas Eje Y Dinámicas */}
+              <text x="30" y="25" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">{formatUsd(maxIngreso)}</text>
+              <text x="30" y="80" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">{formatUsd(maxIngreso * 0.75)}</text>
+              <text x="30" y="135" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">{formatUsd(maxIngreso * 0.5)}</text>
+              <text x="30" y="190" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">{formatUsd(maxIngreso * 0.25)}</text>
+              <text x="30" y="214" textAnchor="end" className="text-[10px] fill-muted-foreground font-mono">$0</text>
 
               {/* Barras de los 12 meses */}
               {data.serieMensual.map((item, index) => {

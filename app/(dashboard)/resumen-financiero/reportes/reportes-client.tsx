@@ -12,7 +12,7 @@
  * -------------------------------------------------------
  */
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useCallback } from 'react'
 import {
   FileSpreadsheet,
   Download,
@@ -20,26 +20,53 @@ import {
   Search,
   ChevronLeft,
   ChevronRight,
+  RefreshCw,
 } from 'lucide-react'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs } from '@/components/ui/tabs'
 import { formatUsd, formatDate } from '@/lib/format'
-import type { ReporteFinancieroData } from '@/lib/actions/resumen-financiero'
+import { getReporteFinanciero, type ReporteFinancieroData } from '@/lib/actions/resumen-financiero'
 
 interface ReportesClientProps {
   initialData: ReporteFinancieroData
 }
 
 export default function ReportesClient({ initialData }: ReportesClientProps) {
-  const [data] = useState<ReporteFinancieroData>(initialData)
+  const [data, setData] = useState<ReporteFinancieroData>(initialData)
   const [activeTab, setActiveTab] = useState('pedidos')
+  const [cargando, setCargando] = useState(false)
   
-  // Filtros de fecha y hora
-  const [fechaInicio, setFechaInicio] = useState('2026-08-01T00:00')
-  const [fechaFin, setFechaFin] = useState('2026-08-15T23:59')
+  // Filtros de fecha y hora dinámicos para el mes en curso
+  const [fechaInicio, setFechaInicio] = useState(() => {
+    const ahora = new Date()
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0')
+    return `${ahora.getFullYear()}-${mes}-01T00:00`
+  })
+  const [fechaFin, setFechaFin] = useState(() => {
+    const ahora = new Date()
+    const mes = String(ahora.getMonth() + 1).padStart(2, '0')
+    const lastDay = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0).getDate()
+    return `${ahora.getFullYear()}-${mes}-${String(lastDay).padStart(2, '0')}T23:59`
+  })
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState('todos')
   const [busqueda, setBusqueda] = useState('')
+
+  const recargarReporte = useCallback(async (inicio?: string, fin?: string) => {
+    setCargando(true)
+    const { data: res } = await getReporteFinanciero({
+      fechaInicio: inicio ?? fechaInicio,
+      fechaFin: fin ?? fechaFin,
+    })
+    if (res) {
+      setData(res)
+    }
+    setCargando(false)
+  }, [fechaInicio, fechaFin])
+
+  useEffect(() => {
+    recargarReporte()
+  }, [])
 
   // Paginación
   const [paginaActual, setPaginaActual] = useState(1)
@@ -180,15 +207,26 @@ export default function ReportesClient({ initialData }: ReportesClientProps) {
 
           {/* Botones de Acción */}
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="primary" size="sm" className="gap-1.5">
-              Generar
+            <Button
+              variant="primary"
+              size="sm"
+              className="gap-1.5"
+              disabled={cargando}
+              onClick={() => recargarReporte(fechaInicio, fechaFin)}
+            >
+              {cargando ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : null}
+              {cargando ? 'Generando...' : 'Generar'}
             </Button>
             <Button
               variant="outline"
               size="sm"
+              disabled={cargando}
               onClick={() => {
-                setFechaInicio('2026-01-01T00:00')
-                setFechaFin('2026-12-31T23:59')
+                const ini = '2026-01-01T00:00'
+                const fin = '2026-12-31T23:59'
+                setFechaInicio(ini)
+                setFechaFin(fin)
+                recargarReporte(ini, fin)
               }}
             >
               Reporte completo

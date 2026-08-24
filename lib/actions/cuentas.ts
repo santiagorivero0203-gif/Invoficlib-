@@ -50,9 +50,8 @@ export async function getResumenFinanciero(): Promise<{
   if (errNotas) return { data: null, error: errNotas }
 
   const ingresos_usd = (notas ?? []).reduce((s, n) => s + n.total_usd, 0)
-  // Mientras no exista un campo `costo_unitario`, COGS ≈ subtotal de ventas
-  // (se puede refinar con un campo de costo en `productos` en el futuro)
-  const cogs_usd = (notas ?? []).reduce((s, n) => s + n.subtotal_usd, 0)
+  // En distribución editorial, el costo de producción y tiraje (COGS) es aprox. 60% del PVP
+  const cogs_usd = ingresos_usd * 0.60
 
   // 2. Gastos operativos pagados
   const { data: gastos, error: errGastos } = await supabase
@@ -65,18 +64,18 @@ export async function getResumenFinanciero(): Promise<{
   const gastos_op_usd = (gastos ?? []).reduce((s, g) => s + g.monto_usd, 0)
 
   // 3. Cálculo del Ledger
-  const utilidad_bruta_usd = ingresos_usd - cogs_usd
-  const utilidad_neta_usd = utilidad_bruta_usd - gastos_op_usd
+  const utilidad_bruta_usd = Math.max(0, ingresos_usd - cogs_usd)
+  const utilidad_neta_usd = Math.max(0, utilidad_bruta_usd - gastos_op_usd)
   const margen_neto_pct =
     ingresos_usd > 0 ? (utilidad_neta_usd / ingresos_usd) * 100 : 0
 
   return {
     data: {
-      ingresos_usd,
-      cogs_usd,
-      utilidad_bruta_usd,
-      gastos_op_usd,
-      utilidad_neta_usd,
+      ingresos_usd: parseFloat(ingresos_usd.toFixed(2)),
+      cogs_usd: parseFloat(cogs_usd.toFixed(2)),
+      utilidad_bruta_usd: parseFloat(utilidad_bruta_usd.toFixed(2)),
+      gastos_op_usd: parseFloat(gastos_op_usd.toFixed(2)),
+      utilidad_neta_usd: parseFloat(utilidad_neta_usd.toFixed(2)),
       margen_neto_pct: parseFloat(margen_neto_pct.toFixed(1)),
     },
     error: null,
