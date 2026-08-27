@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useState } from 'react'
+import { useCallback, useState, useMemo } from 'react'
 import Link from 'next/link'
 import {
   ArrowUpDown,
@@ -112,15 +112,40 @@ export default function RegistrosClient({
     cargarDatos()
   }
 
-  const movimientosFiltrados = movimientos.filter((m) => {
-    const sku = m.productos?.codigo_sku?.toLowerCase() ?? ''
-    const nombre = m.productos?.nombre?.toLowerCase() ?? ''
-    const motivoTexto = m.motivo?.toLowerCase() ?? ''
-    const notaRef = m.notas?.correlativo?.toLowerCase() ?? ''
-    const q = busqueda.toLowerCase()
+  const [usuarioFiltro, setUsuarioFiltro] = useState<string>('todos')
 
-    return sku.includes(q) || nombre.includes(q) || motivoTexto.includes(q) || notaRef.includes(q)
-  })
+  // Lista dinámica de responsables de movimientos
+  const usuariosDisponibles = useMemo(() => {
+    const lista = new Set<string>()
+    movimientos.forEach((m) => {
+      if (m.perfiles?.nombre_completo) lista.add(m.perfiles.nombre_completo)
+    })
+    return Array.from(lista)
+  }, [movimientos])
+
+  const movimientosFiltrados = useMemo(() => {
+    return movimientos.filter((m) => {
+      const sku = m.productos?.codigo_sku?.toLowerCase() ?? ''
+      const nombre = m.productos?.nombre?.toLowerCase() ?? ''
+      const motivoTexto = m.motivo?.toLowerCase() ?? ''
+      const notaRef = m.notas?.correlativo?.toLowerCase() ?? ''
+      const usuarioNombre = m.perfiles?.nombre_completo?.toLowerCase() ?? ''
+      const q = busqueda.toLowerCase()
+
+      const matchBusqueda =
+        !q ||
+        sku.includes(q) ||
+        nombre.includes(q) ||
+        motivoTexto.includes(q) ||
+        notaRef.includes(q) ||
+        usuarioNombre.includes(q)
+
+      const matchUsuario =
+        usuarioFiltro === 'todos' || m.perfiles?.nombre_completo === usuarioFiltro
+
+      return matchBusqueda && matchUsuario
+    })
+  }, [movimientos, busqueda, usuarioFiltro])
 
   const totalEntradas = movimientos.filter((m) => m.tipo === 'entrada').length
   const totalSalidas = movimientos.filter((m) => m.tipo === 'salida').length
@@ -265,11 +290,28 @@ export default function RegistrosClient({
           </button>
         </div>
 
+        {/* Selector de Usuario / Responsable */}
+        <div className="flex items-center gap-2 rounded-xl border border-border bg-card px-3 py-2 text-xs">
+          <span className="text-muted-foreground font-semibold">Usuario:</span>
+          <select
+            value={usuarioFiltro}
+            onChange={(e) => setUsuarioFiltro(e.target.value)}
+            className="bg-transparent text-xs font-medium text-foreground focus:outline-none cursor-pointer"
+          >
+            <option value="todos">Todos los usuarios</option>
+            {usuariosDisponibles.map((u: string) => (
+              <option key={u} value={u}>
+                {u}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="relative flex-1 sm:max-w-xs">
           <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
-            placeholder="Buscar por libro, SKU, motivo..."
+            placeholder="Buscar por libro, SKU, motivo, usuario..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             className="h-10 w-full rounded-xl border border-border bg-card pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary-accent/50 focus:outline-none focus:ring-2 focus:ring-primary-accent/20"
@@ -303,13 +345,15 @@ export default function RegistrosClient({
                   <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Tipo</th>
                   <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Cantidad</th>
                   <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Motivo / Operación</th>
+                  <th className="px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Responsable</th>
                   <th className="hidden px-4 py-3.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground md:table-cell">Nota / Ref</th>
                   <th className="px-4 py-3.5 text-right text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Fecha</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border/50">
-                {movimientosFiltrados.map((mov) => {
+                {movimientosFiltrados.map((mov: MovimientoConProducto) => {
                   const esEntrada = mov.tipo === 'entrada'
+                  const nombreResponsable = mov.perfiles?.nombre_completo || 'Sistema'
                   return (
                     <tr
                       key={mov.id}
@@ -334,6 +378,12 @@ export default function RegistrosClient({
                       </td>
                       <td className="px-4 py-3.5 text-xs text-muted-foreground">
                         {mov.motivo || 'Movimiento de inventario'}
+                      </td>
+                      <td className="px-4 py-3.5 text-xs">
+                        <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary-accent" />
+                          {nombreResponsable}
+                        </span>
                       </td>
                       <td className="hidden px-4 py-3.5 font-mono text-xs text-muted-foreground md:table-cell">
                         {mov.notas ? (

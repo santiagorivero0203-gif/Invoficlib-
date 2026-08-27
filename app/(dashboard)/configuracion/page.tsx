@@ -378,6 +378,71 @@ export default function ConfiguracionPage() {
           </CardContent>
         </Card>
 
+        {/* Card: Gestión de Equipo y Control de Cuentas */}
+        <Card className="md:col-span-2 border-border/80">
+          <CardHeader>
+            <div className="flex items-center gap-3.5">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-foreground border border-border">
+                <User className="h-5 w-5 text-primary-accent" />
+              </div>
+              <div>
+                <CardTitle>Cuentas del Equipo y Permisos</CardTitle>
+                <CardDescription>
+                  Jerarquía de roles y control de acceso del sistema Invoficlib.
+                </CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+              {/* Cuenta Henry Rivero (Jefe) */}
+              <div className="rounded-2xl border-2 border-primary-accent/40 bg-primary-accent/5 p-4 space-y-2 relative">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground">Henry Rivero</span>
+                  <Badge variant="disponible">Jefe / Admin</Badge>
+                </div>
+                <p className="text-xs font-mono text-muted-foreground truncate">invoficlib4230@gmail.com</p>
+                <div className="pt-2 border-t border-border/50 text-[11px] text-muted-foreground space-y-1">
+                  <p className="text-foreground font-semibold">Permisos exclusivos:</p>
+                  <p>✓ Anular pedidos y notas</p>
+                  <p>✓ Acceso a balances y utilidad/pérdida</p>
+                  <p>✓ Control de gastos y caja chica</p>
+                </div>
+              </div>
+
+              {/* Cuenta Santiago Rivero (Developer) */}
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground">Santiago Rivero</span>
+                  <Badge variant="outline">Desarrollador</Badge>
+                </div>
+                <p className="text-xs font-mono text-muted-foreground truncate">santiago.rivero0203@gmail.com</p>
+                <div className="pt-2 border-t border-border/50 text-[11px] text-muted-foreground space-y-1">
+                  <p className="text-foreground font-semibold">Permisos técnicos:</p>
+                  <p>✓ Auditoría y base de datos</p>
+                  <p>✓ Mantenimiento e infraestructura</p>
+                  <p>✓ Soporte y despliegues</p>
+                </div>
+              </div>
+
+              {/* Rol Secretaría */}
+              <div className="rounded-2xl border border-border bg-muted/20 p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-foreground">Secretaría / Ventas</span>
+                  <Badge variant="warning">Operativo</Badge>
+                </div>
+                <p className="text-xs text-muted-foreground">Acceso de mostrador</p>
+                <div className="pt-2 border-t border-border/50 text-[11px] text-muted-foreground space-y-1">
+                  <p className="text-foreground font-semibold">Permisos estándar:</p>
+                  <p>✓ Emisión de notas de venta</p>
+                  <p>✓ Registro de pagos y vuelto</p>
+                  <p className="text-rose-500 font-medium">✗ Sin permiso para anular notas</p>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Card: Aplicación Móvil PWA y APK */}
         <Card className="md:col-span-2">
           <CardHeader>

@@ -23,6 +23,11 @@ export type MovimientoConProducto = MovimientoInventario & {
     cliente_nombre: string
     tipo_salida: string
   } | null
+  perfiles?: {
+    id: string
+    nombre_completo: string
+    rol: string
+  } | null
 }
 
 /**
@@ -45,6 +50,11 @@ export async function getMovimientos(tipo?: 'entrada' | 'salida') {
         correlativo,
         cliente_nombre,
         tipo_salida
+      ),
+      perfiles:usuario_id (
+        id,
+        nombre_completo,
+        rol
       )
     `)
     .order('fecha_creacion', { ascending: false })
@@ -64,9 +74,18 @@ export async function registrarMovimientoManual(
 ) {
   const supabase = createClient()
 
+  let usuarioId = movimiento.usuario_id
+  if (!usuarioId) {
+    const { data: { user } } = await supabase.auth.getUser()
+    usuarioId = user?.id || null
+  }
+
   return supabase
     .from('movimientos_inventario')
-    .insert(movimiento)
+    .insert({
+      ...movimiento,
+      usuario_id: usuarioId,
+    })
     .select()
     .single()
 }
